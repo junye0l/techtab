@@ -1,0 +1,25 @@
+name: Deploy Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - ".github/workflows/worker-deploy.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: worker
