@@ -1,0 +1,25 @@
+// 국내 빅테크/스타트업 기술 블로그 RSS 목록 (URL 실동작 검증됨, 2026-08-24 기준)
+// 리디, 오늘의집은 자체 도메인 이전 후 RSS가 없거나(404) 막혀있어(403) 제외함 — 나중에 열리면 다시 추가
+export const FEEDS: { source: string; url: string }[] = [
+  { source: "네이버 D2", url: "https://d2.naver.com/d2.atom" },
+  { source: "카카오", url: "https://tech.kakao.com/feed" },
+  { source: "카카오페이", url: "https://tech.kakaopay.com/rss.xml" },
+  { source: "LINE", url: "https://techblog.lycorp.co.jp/ko/feed/index.xml" },
+  { source: "쿠팡", url: "https://medium.com/feed/coupang-engineering" },
+  { source: "우아한형제들", url: "https://techblog.woowahan.com/feed/" },
+  { source: "당근마켓", url: "https://medium.com/feed/daangn" },
+  { source: "토스", url: "https://toss.tech/rss.xml" },
+  { source: "무신사", url: "https://medium.com/feed/musinsa-tech" },
+  { source: "야놀자", url: "https://medium.com/feed/yanolja" },
+  { source: "마켓컬리", url: "https://helloworld.kurly.com/rss.xml" },
+  { source: "직방", url: "https://medium.com/feed/zigbang" },
+  { source: "NHN", url: "https://meetup.nhncloud.com/rss" },
+  { source: "하이퍼커넥트", url: "https://hyperconnect.github.io/feed.xml" },
+  { source: "뱅크샐러드", url: "https://blog.banksalad.com/rss.xml" },
+  { source: "쏘카", url: "https://tech.socar.kr/rss.xml" },
+  { source: "왓챠", url: "https://medium.com/feed/watcha" },
+  { source: "원티드랩", url: "https://medium.com/feed/wantedjobs" },
+  { source: "에이블리", url: "https://ably-team.medium.com/feed" },
+  { source: "여기어때", url: "https://techblog.gccompany.co.kr/feed" },
+  { source: "올리브영", url: "https://oliveyoung.tech/rss.xml" },
+];

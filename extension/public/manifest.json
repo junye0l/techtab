@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Tech Tab",
+  "version": "0.1.0",
+  "description": "국내외 개발자 뉴스와 빅테크 기술 블로그를 새 탭에서 모아보기",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Tech Tab",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

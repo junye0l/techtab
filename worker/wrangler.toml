@@ -1,0 +1,11 @@
+name = "hackertab-kr-worker"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hackertab-kr"
+database_id = "82199233-01fe-48a2-87d5-78dde44d44e2"
+
+[triggers]
+crons = ["0 * * * *"]
