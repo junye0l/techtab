@@ -368,7 +368,7 @@ export default function App() {
 
       {!showBookmarksOnly && showEmptyHero && (
         <div className="empty-hero">
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="logo-intro-canvas" />}>
             <LogoIntroCanvas color={theme === "dark" ? "#ededed" : "#171717"} />
           </Suspense>
           <div className="empty-hero-content">
