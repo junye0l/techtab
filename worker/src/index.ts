@@ -5,10 +5,20 @@ export interface Env {
   DB: D1Database;
 }
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "chrome-extension://kobpfgadkgconpdpdppekbioiebnoggc",
-  "Access-Control-Allow-Methods": "GET",
-};
+const EXTENSION_ORIGIN = "chrome-extension://kobpfgadkgconpdpdppekbioiebnoggc";
+
+// 로컬 dev 서버(npm run dev)에서도 API를 호출할 수 있게 localhost origin도 허용
+function corsHeaders(request: Request): HeadersInit {
+  const origin = request.headers.get("Origin");
+  const allowedOrigin =
+    origin && (origin === EXTENSION_ORIGIN || origin.startsWith("http://localhost:"))
+      ? origin
+      : EXTENSION_ORIGIN;
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET",
+  };
+}
 
 // 기본 엔티티 확장 제한(1000)은 본문이 긴 블로그 글(escape된 HTML)에서 쉽게 초과되므로 완화
 const parser = new XMLParser({
@@ -93,7 +103,7 @@ export default {
          ) WHERE rn <= 10
          ORDER BY published_at DESC`
       ).all();
-      return Response.json(results, { headers: CORS_HEADERS });
+      return Response.json(results, { headers: corsHeaders(request) });
     }
 
     return new Response("not found", { status: 404 });
