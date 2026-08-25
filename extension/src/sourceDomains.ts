@@ -5,7 +5,7 @@ export const SOURCE_DOMAINS: Record<string, string> = {
   "카카오페이": "tech.kakaopay.com",
   "LINE": "line.me",
   "쿠팡": "coupang.com",
-  "우아한형제들": "techblog.woowahan.com",
+  "우아한형제들": "baemin.com",
   "당근마켓": "daangn.com",
   "토스": "toss.im",
   "무신사": "musinsa.com",
