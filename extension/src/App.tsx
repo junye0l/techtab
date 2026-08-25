@@ -8,7 +8,7 @@ import { useFlip } from "./useFlip";
 
 const LogoIntroCanvas = lazy(() => import("./LogoIntroCanvas"));
 
-const API_URL = "https://hackertab-kr-worker.junyeolkim00.workers.dev/api/articles";
+const API_URL = "https://techtab-worker.junyeolkim00.workers.dev/api/articles";
 const ARTICLES_PER_COLUMN = 8;
 
 interface Article {

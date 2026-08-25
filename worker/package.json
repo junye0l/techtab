@@ -1,5 +1,5 @@
 {
-  "name": "hackertab-kr-worker",
+  "name": "techtab-worker",
   "private": true,
   "type": "module",
   "scripts": {

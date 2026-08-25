@@ -60,7 +60,7 @@ async function collectFeeds(env: Env) {
 
   for (const feed of FEEDS) {
     try {
-      const res = await fetch(feed.url, { headers: { "User-Agent": "hackertab-kr-bot" } });
+      const res = await fetch(feed.url, { headers: { "User-Agent": "techtab-bot" } });
       if (!res.ok) continue;
       const xml = await res.text();
       const items = extractItems(xml);
