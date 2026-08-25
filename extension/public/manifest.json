@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tech Tab",
   "version": "0.1.0",
-  "description": "국내외 개발자 뉴스와 빅테크 기술 블로그를 새 탭에서 모아보기",
+  "description": "국내 빅테크·스타트업 기술 블로그를 새 탭에서 모아보기",
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
