@@ -43,8 +43,8 @@ function stripHeavyTags(xml: string): string {
     .replace(/<content(\s[^>]*)?>[\s\S]*?<\/content>/g, "");
 }
 
-function extractItems(xml: string): { title: string; link: string; pubDate: string | null }[] {
-  const parsed = parser.parse(stripHeavyTags(xml));
+function extractItems(strippedXml: string): { title: string; link: string; pubDate: string | null }[] {
+  const parsed = parser.parse(strippedXml);
   // RSS 2.0: rss.channel.item, Atom: feed.entry
   const rssItems = parsed?.rss?.channel?.item;
   const atomEntries = parsed?.feed?.entry;
@@ -65,6 +65,10 @@ function extractItems(xml: string): { title: string; link: string; pubDate: stri
     .filter((item) => item.title && /^https?:\/\//i.test(item.link));
 }
 
+// title/link/날짜만 남긴 후 기준 크기. 무거운 태그(본문 이미지 등) 제거 전 원본 크기로 판단하면
+// 정상 피드(예: 본문에 base64 이미지가 박힌 글)까지 오탐으로 걸러내므로, 반드시 stripHeavyTags 이후에 검사
+const MAX_STRIPPED_FEED_BYTES = 5 * 1024 * 1024;
+
 async function collectFeeds(env: Env) {
   const now = new Date().toISOString();
 
@@ -72,7 +76,13 @@ async function collectFeeds(env: Env) {
     try {
       const res = await fetch(feed.url, { headers: { "User-Agent": "techtab-bot" } });
       if (!res.ok) continue;
-      const xml = await res.text();
+
+      const xml = stripHeavyTags(await res.text());
+      if (xml.length > MAX_STRIPPED_FEED_BYTES) {
+        console.error(`skipping ${feed.source}: response too large after stripping (${xml.length} bytes)`);
+        continue;
+      }
+
       const items = extractItems(xml);
 
       for (const item of items) {
