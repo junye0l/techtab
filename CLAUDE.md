@@ -24,7 +24,9 @@ TechTab ("Tech Tab - 새 탭에서 만나는 국내 빅테크 개발 뉴스") is
 ### Releasing an extension version
 1. Bump `version` in both `extension/package.json` and `extension/public/manifest.json`.
 2. `git tag vX.Y.Z && git push origin vX.Y.Z` — CI builds, zips `dist/`, and attaches it to an auto-generated GitHub Release.
-3. Download that zip and upload it manually in the Chrome Web Store developer dashboard (store submission is not automated — it needs a human in the review flow).
+3. The user downloads that zip from the GitHub Release page themselves and uploads it manually in the Chrome Web Store developer dashboard (store submission is not automated — it needs a human in the review flow).
+
+**Don't build or hand off a local `.zip` for store upload — the GitHub Release is the only distributable package.** Building one locally (even just to preview it) risks drifting from what's actually tagged, which happened once already. If a tag needs to point at newer code before it's been submitted anywhere, force-move it (`git tag -f vX.Y.Z <commit> && git push origin vX.Y.Z --force`) and let CI regenerate the Release rather than second-guessing it with a local build.
 
 ## Architecture
 
