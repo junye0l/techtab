@@ -1,0 +1,29 @@
+name: Release Extension
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: extension
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run build
+      - run: |
+          cd dist
+          zip -r "../techtab-${{ github.ref_name }}.zip" . -x ".*"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: extension/techtab-${{ github.ref_name }}.zip
+          generate_release_notes: true
