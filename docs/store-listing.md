@@ -23,5 +23,5 @@
 ■ 개인정보
 회원가입이나 로그인이 필요 없고, 어떠한 개인정보도 수집하지 않습니다. 모든 설정은 브라우저에만 저장됩니다. 자세한 내용은 개인정보처리방침을 참고하세요.
 
-■ 오픈소스
-소스코드는 GitHub에 공개되어 있습니다: https://github.com/junye0l/techtab
+■ 코드
+소스코드는 GitHub에서 볼 수 있습니다: https://github.com/junye0l/techtab
