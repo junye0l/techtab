@@ -237,16 +237,24 @@ body {
 }
 
 .chips-toggle {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 36px;
-  margin-top: calc(var(--space-sm) - 8px);
+  width: 32px;
+  height: 20px;
+  margin-top: var(--space-sm);
   color: var(--color-mute);
   background: none;
   border: none;
   cursor: pointer;
+}
+
+/* 눈에 보이는 버튼 크기는 유지하면서, 클릭 가능 범위만 확장 (레이아웃에 영향 없음) */
+.chips-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
 }
 
 .chips-toggle:hover {
