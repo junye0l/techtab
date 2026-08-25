@@ -59,9 +59,10 @@ There is no release-branch gate — commits go straight to `main`; the Chrome We
 - `CLOUDFLARE_API_TOKEN` only ever lives in the GitHub Actions repo secret — never in `wrangler.toml`, a commit, or a log.
 - After adding/bumping any dependency, run `npm audit` in that package and note whether the finding is dev-only tooling (esbuild/vite/wrangler's bundled deps — low urgency) or a runtime dependency actually shipped (e.g. `fast-xml-parser` — fix promptly).
 
-**Stability** — code that type-checks or builds isn't proof it works; this repo has shipped both a layout-shift and a dark-mode FOUC bug that looked fine on read-through:
+**Stability** — code that type-checks or builds isn't proof it works; this repo has shipped a layout-shift bug, a hit-area regression, and a dark-mode FOUC fix that looked fine on read-through and even in `npm run dev`, but was silently dead in the real extension:
 - After a dependency bump touching the worker, run `wrangler dev`, init the local D1 (`npm run db:init`), manually trigger the cron (`curl http://localhost:8787/cdn-cgi/local/scheduled`), and confirm `/api/articles` still returns real parsed data — don't trust `npm install` succeeding alone.
 - After any UI/CSS change, actually load `npm run dev` and screenshot both light and dark theme before calling it done.
+- **`npm run dev` does not enforce Manifest V3's CSP** (it's a plain page at `localhost:5173`, no `script-src 'self'`). Any change involving inline `<script>`/`<style>`, `eval`, or anything else CSP-sensitive *looks* like it works there and then silently no-ops in the real extension. Ship it as `npm run build`, load the `dist/` folder unpacked in `chrome://extensions`, and check the console for CSP violation errors before calling a fix like that done — this is exactly how the FOUC fix's first attempt (an inline script) turned out to be doing nothing in production.
 - A hit-area fix must preserve the element's visible size — expand the clickable range via an absolutely-positioned `::after { position: absolute; inset: -Npx }`, not by resizing the element itself (this was gotten wrong once already).
 
 ## User preferences
