@@ -1,10 +1,8 @@
 # Tech Tab
 
-**[소개 페이지 →](https://junye0l.github.io/techtab/)**
+**[소개 페이지 →](https://junye0l.github.io/techtab/)** · **[릴리즈 →](https://github.com/junye0l/techtab/releases)**
 
 국내 빅테크 기술 블로그를 새 탭에서 모아보는 크롬 확장 프로그램입니다.
-
-현재 버전: v0.1.2 (스토어 제출 대기)
 
 네이버, 카카오, 토스, 쿠팡, 당근마켓 등 21개 기업의 기술 블로그 RSS를 매시간 자동으로 수집해서, 관심 있는 기업만 골라 나만의 피드로 볼 수 있습니다.
 
