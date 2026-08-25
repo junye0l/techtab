@@ -6,7 +6,7 @@ export interface Env {
 }
 
 const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "chrome-extension://kobpfgadkgconpdpdppekbioiebnoggc",
   "Access-Control-Allow-Methods": "GET",
 };
 
