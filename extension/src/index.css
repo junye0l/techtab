@@ -167,6 +167,17 @@ body {
   color: var(--color-link);
 }
 
+.lang-toggle {
+  width: auto;
+  gap: 4px;
+  padding: 0 6px;
+}
+
+.lang-toggle-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
 .chips-wrap {
   display: flex;
   flex-direction: column;

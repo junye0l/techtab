@@ -34,3 +34,32 @@ export function faviconUrl(source: string): string {
   const domain = SOURCE_DOMAINS[source];
   return `https://www.google.com/s2/favicons?sz=32&domain=${domain ?? source}`;
 }
+
+// source 문자열은 selectedSources/order/localStorage/favicon 키라 그대로 두고, 표시할 때만 영어 브랜드명으로 변환
+// (LINE·NHN 등 이미 라틴 문자인 소스는 매핑에 없으면 그대로 통과)
+const SOURCE_LABELS_EN: Record<string, string> = {
+  "네이버 D2": "NAVER D2",
+  "카카오": "Kakao",
+  "카카오페이": "KakaoPay",
+  "쿠팡": "Coupang",
+  "우아한형제들": "Woowahan",
+  "당근마켓": "Daangn",
+  "토스": "Toss",
+  "무신사": "MUSINSA",
+  "야놀자": "Yanolja",
+  "마켓컬리": "Kurly",
+  "직방": "Zigbang",
+  "하이퍼커넥트": "Hyperconnect",
+  "뱅크샐러드": "Banksalad",
+  "쏘카": "SOCAR",
+  "왓챠": "WATCHA",
+  "원티드랩": "Wanted",
+  "에이블리": "ABLY",
+  "여기어때": "GC Company",
+  "올리브영": "Olive Young",
+};
+
+export function sourceLabel(source: string, locale: "ko" | "en"): string {
+  if (locale === "ko") return source;
+  return SOURCE_LABELS_EN[source] ?? source;
+}

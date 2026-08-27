@@ -3,9 +3,35 @@ import { FEEDS } from "./feeds";
 
 export interface Env {
   DB: D1Database;
+  DEEPL_API_KEY: string;
 }
 
 const EXTENSION_ORIGIN = "chrome-extension://kobpfgadkgconpdpdppekbioiebnoggc";
+
+// 새로 저장된 글 제목만 영어로 번역 (DeepL Free). 한 요청에 최대 50개, 실패 시 전부 null → 확장에서 원문 폴백
+async function translateToEnglish(titles: string[], apiKey: string): Promise<(string | null)[]> {
+  if (titles.length === 0) return [];
+  try {
+    const res = await fetch("https://api-free.deepl.com/v2/translate", {
+      method: "POST",
+      headers: {
+        Authorization: `DeepL-Auth-Key ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text: titles, source_lang: "KO", target_lang: "EN-US" }),
+    });
+    if (!res.ok) {
+      console.error(`DeepL request failed: ${res.status}`);
+      return titles.map(() => null);
+    }
+    const data = (await res.json()) as { translations?: { text: string }[] };
+    const out = data.translations ?? [];
+    return titles.map((_, i) => out[i]?.text ?? null);
+  } catch (err) {
+    console.error("DeepL request threw", err);
+    return titles.map(() => null);
+  }
+}
 
 // 로컬 dev 서버(npm run dev)에서도 API를 호출할 수 있게 localhost origin도 허용
 function corsHeaders(request: Request): HeadersInit {
@@ -85,15 +111,32 @@ async function collectFeeds(env: Env) {
 
       const items = extractItems(xml);
 
+      const newItems: { link: string; title: string }[] = [];
       for (const item of items) {
         const parsedDate = item.pubDate ? new Date(item.pubDate) : null;
         const publishedAt = parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : now;
 
-        await env.DB.prepare(
+        const result = await env.DB.prepare(
           "INSERT OR IGNORE INTO articles (link, title, source, published_at, fetched_at) VALUES (?, ?, ?, ?, ?)"
         )
           .bind(item.link, item.title, feed.source, publishedAt, now)
           .run();
+
+        if (result.meta.changes > 0) newItems.push({ link: item.link, title: item.title });
+      }
+
+      // 이번에 새로 저장된 글만 제목 번역 (피드당 DeepL 요청 1번)
+      if (newItems.length > 0) {
+        const translated = await translateToEnglish(
+          newItems.map((i) => i.title),
+          env.DEEPL_API_KEY
+        );
+        for (let i = 0; i < newItems.length; i++) {
+          if (!translated[i]) continue;
+          await env.DB.prepare("UPDATE articles SET title_en = ? WHERE link = ?")
+            .bind(translated[i], newItems[i].link)
+            .run();
+        }
       }
     } catch (err) {
       console.error(`failed to collect ${feed.source}`, err);
@@ -107,13 +150,37 @@ export default {
 
     if (url.pathname === "/api/articles") {
       const { results } = await env.DB.prepare(
-        `SELECT title, link, source, published_at FROM (
+        `SELECT title, title_en, link, source, published_at FROM (
            SELECT *, ROW_NUMBER() OVER (PARTITION BY source ORDER BY published_at DESC) AS rn
            FROM articles
          ) WHERE rn <= 10
          ORDER BY published_at DESC`
       ).all();
       return Response.json(results, { headers: corsHeaders(request) });
+    }
+
+    // 기존 글 title_en 백필용 임시 라우트 — 다 채운 뒤 다음 커밋에서 제거
+    if (url.pathname === "/admin/backfill") {
+      if (request.headers.get("Authorization") !== `Bearer ${env.DEEPL_API_KEY}`) {
+        return new Response("unauthorized", { status: 401 });
+      }
+      const { results } = await env.DB.prepare(
+        "SELECT link, title FROM articles WHERE title_en IS NULL LIMIT 50"
+      ).all<{ link: string; title: string }>();
+
+      const translated = await translateToEnglish(
+        results.map((r) => r.title),
+        env.DEEPL_API_KEY
+      );
+      let updated = 0;
+      for (let i = 0; i < results.length; i++) {
+        if (!translated[i]) continue;
+        await env.DB.prepare("UPDATE articles SET title_en = ? WHERE link = ?")
+          .bind(translated[i], results[i].link)
+          .run();
+        updated++;
+      }
+      return Response.json({ batch: results.length, updated });
     }
 
     return new Response("not found", { status: 404 });

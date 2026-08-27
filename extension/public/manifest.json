@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Tech Tab - 새 탭에서 만나는 국내 빅테크 개발 뉴스",
+  "default_locale": "ko",
+  "name": "__MSG_extName__",
   "version": "0.1.2",
-  "description": "국내 빅테크·스타트업 기술 블로그를 새 탭에서 모아보기",
+  "description": "__MSG_extDesc__",
   "chrome_url_overrides": {
     "newtab": "index.html"
   },

@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Bookmark, ChevronDown, GripVertical, Moon, Search, Sun } from "lucide-react";
+import { Bookmark, ChevronDown, GripVertical, Languages, Moon, Search, Sun } from "lucide-react";
 import "./index.css";
-import { faviconUrl } from "./sourceDomains";
-import { extractKeyword } from "./keywords";
+import { faviconUrl, sourceLabel } from "./sourceDomains";
+import { extractKeyword, keywordLabel } from "./keywords";
+import { useI18n, type Locale, type TFunc } from "./i18n";
 import GoogleIcon from "./GoogleIcon";
 import { useFlip } from "./useFlip";
 
@@ -13,18 +14,25 @@ const ARTICLES_PER_COLUMN = 8;
 
 interface Article {
   title: string;
+  title_en: string | null;
   link: string;
   source: string;
   published_at: string | null;
 }
 
-function timeAgo(iso: string | null): string {
+// 영어 모드에서 번역본이 있으면 그걸, 없으면(번역 실패/백필 전) 한국어 원문으로 폴백
+function displayTitle(article: Article, locale: Locale): string {
+  return locale === "en" && article.title_en ? article.title_en : article.title;
+}
+
+function timeAgo(iso: string | null, locale: Locale, justNow: string): string {
   if (!iso) return "";
   const diffMs = Date.now() - new Date(iso).getTime();
   const hours = Math.floor(diffMs / 3600_000);
-  if (hours < 1) return "방금 전";
-  if (hours < 24) return `${hours}시간 전`;
-  return `${Math.floor(hours / 24)}일 전`;
+  if (hours < 1) return justNow;
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always", style: "narrow" });
+  if (hours < 24) return rtf.format(-hours, "hour");
+  return rtf.format(-Math.floor(hours / 24), "day");
 }
 
 function runSearch(query: string) {
@@ -45,6 +53,8 @@ function ArticleCard({
   isRead,
   isBookmarked,
   isNew,
+  locale,
+  t,
   onRead,
   onToggleBookmark,
 }: {
@@ -54,6 +64,8 @@ function ArticleCard({
   isRead: boolean;
   isBookmarked: boolean;
   isNew: boolean;
+  locale: Locale;
+  t: TFunc;
   onRead: () => void;
   onToggleBookmark: () => void;
 }) {
@@ -63,7 +75,7 @@ function ArticleCard({
       <button
         className="bookmark-toggle"
         onClick={onToggleBookmark}
-        aria-label={isBookmarked ? "북마크 해제" : "북마크"}
+        aria-label={isBookmarked ? t("bookmarkRemove") : t("bookmarkAdd")}
       >
         <Bookmark size={16} fill={isBookmarked ? "currentColor" : "none"} />
       </button>
@@ -74,16 +86,20 @@ function ArticleCard({
         onClick={onRead}
         className={isRead ? "article-link-read" : ""}
       >
-        {article.title}
+        {displayTitle(article, locale)}
       </a>
       <div className="article-meta">
         {isNew && <span className="new-badge">NEW</span>}
         {showSourceBadge ? (
-          <img src={faviconUrl(article.source)} alt={article.source} className="source-badge-icon" />
+          <img
+            src={faviconUrl(article.source)}
+            alt={sourceLabel(article.source, locale)}
+            className="source-badge-icon"
+          />
         ) : (
-          keyword && <span className="keyword-badge">{keyword}</span>
+          keyword && <span className="keyword-badge">{keywordLabel(keyword, locale)}</span>
         )}
-        <span className="article-time">{timeAgo(article.published_at)}</span>
+        <span className="article-time">{timeAgo(article.published_at, locale, t("justNow"))}</span>
       </div>
     </li>
   );
@@ -146,6 +162,7 @@ function getInitialLastSeen(): Record<string, string> {
 }
 
 export default function App() {
+  const { locale, setLocale, t } = useI18n();
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedSources, setSelectedSources] = useState<Set<string>>(getInitialSelectedSources);
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
@@ -313,28 +330,40 @@ export default function App() {
           <input
             className="search-input"
             type="text"
-            placeholder="Google 검색..."
+            placeholder={t("searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && runSearch(query)}
           />
-          <button className="search-submit" onClick={() => runSearch(query)} aria-label="검색">
+          <button
+            className="search-submit"
+            onClick={() => runSearch(query)}
+            aria-label={t("searchAria")}
+          >
             <Search size={18} />
           </button>
         </div>
         <button
           className={`theme-toggle ${showBookmarksOnly ? "theme-toggle-active" : ""}`}
           onClick={() => setShowBookmarksOnly((v) => !v)}
-          aria-label="북마크 보기"
+          aria-label={t("bookmarksAria")}
         >
           <Bookmark size={16} fill={showBookmarksOnly ? "currentColor" : "none"} />
         </button>
         <button
           className="theme-toggle"
-          onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-          aria-label="테마 전환"
+          onClick={() => setTheme((prev) => (prev === "light" ? "dark" : "light"))}
+          aria-label={t("themeAria")}
         >
           {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+        </button>
+        <button
+          className="theme-toggle lang-toggle"
+          onClick={() => setLocale(locale === "ko" ? "en" : "ko")}
+          aria-label={t("switchLanguage")}
+        >
+          <Languages size={16} />
+          <span className="lang-toggle-label">{locale === "ko" ? "KO" : "EN"}</span>
         </button>
       </header>
 
@@ -349,7 +378,7 @@ export default function App() {
                   onClick={() => toggleSource(source)}
                 >
                   <img src={faviconUrl(source)} alt="" className="chip-icon" />
-                  {source}
+                  {sourceLabel(source, locale)}
                 </button>
               ))}
             </div>
@@ -357,14 +386,14 @@ export default function App() {
           <button
             className="chips-toggle"
             onClick={() => setFiltersCollapsed((v) => !v)}
-            aria-label={filtersCollapsed ? "필터 보기" : "필터 숨기기"}
+            aria-label={filtersCollapsed ? t("showFilters") : t("hideFilters")}
           >
             <ChevronDown className={`chips-toggle-icon ${filtersCollapsed ? "" : "chips-toggle-icon-up"}`} size={16} />
           </button>
         </div>
       )}
 
-      {articles.length === 0 && <p className="empty-state">불러오는 중...</p>}
+      {articles.length === 0 && <p className="empty-state">{t("loading")}</p>}
 
       {!showBookmarksOnly && showEmptyHero && (
         <div className="empty-hero">
@@ -372,8 +401,8 @@ export default function App() {
             <LogoIntroCanvas color={theme === "dark" ? "#ededed" : "#171717"} />
           </Suspense>
           <div className="empty-hero-content">
-            <p className="empty-hero-title">관심있는 기업을 선택해보세요</p>
-            <p className="empty-hero-sub">위 칩을 눌러 나만의 피드를 만들 수 있어요</p>
+            <p className="empty-hero-title">{t("heroTitle")}</p>
+            <p className="empty-hero-sub">{t("heroSub")}</p>
           </div>
         </div>
       )}
@@ -383,10 +412,10 @@ export default function App() {
           <section className="column column--bookmarks">
             <div className="column-header">
               <Bookmark size={20} />
-              북마크 ({bookmarkList.length})
+              {t("bookmarks")} ({bookmarkList.length})
             </div>
             {bookmarkList.length === 0 ? (
-              <p className="empty-state">저장한 글이 없어요. 카드에 마우스를 올려 북마크 아이콘을 눌러보세요.</p>
+              <p className="empty-state">{t("bookmarksEmpty")}</p>
             ) : (
               <ul className="column-list">
                 {bookmarkList.map((a, i) => (
@@ -398,6 +427,8 @@ export default function App() {
                     isRead={readLinks.has(a.link)}
                     isBookmarked
                     isNew={false}
+                    locale={locale}
+                    t={t}
                     onRead={() => markRead(a.link)}
                     onToggleBookmark={() => toggleBookmark(a)}
                   />
@@ -439,7 +470,7 @@ export default function App() {
                 >
                   <GripVertical className="drag-handle" size={16} />
                   <img src={faviconUrl(source)} alt="" className="column-icon" />
-                  {source}
+                  {sourceLabel(source, locale)}
                 </div>
                 <ul className="column-list">
                   {visibleItems.map((a, i) => (
@@ -451,6 +482,8 @@ export default function App() {
                       isRead={readLinks.has(a.link)}
                       isBookmarked={!!bookmarks[a.link]}
                       isNew={newArticleLinks.has(a.link)}
+                      locale={locale}
+                      t={t}
                       onRead={() => markRead(a.link)}
                       onToggleBookmark={() => toggleBookmark(a)}
                     />
@@ -461,7 +494,7 @@ export default function App() {
                     className="show-more"
                     onClick={() => setExpandedColumns((prev) => new Set(prev).add(source))}
                   >
-                    더보기 <ChevronDown size={14} />
+                    {t("showMore")} <ChevronDown size={14} />
                   </button>
                 )}
               </section>
