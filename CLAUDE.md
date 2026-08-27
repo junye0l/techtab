@@ -38,6 +38,8 @@ TechTab ("Tech Tab - 새 탭에서 만나는 국내 빅테크 개발 뉴스") is
 
 **Security-relevant detail:** RSS `link` fields come from external, uncontrolled sources — `App.tsx`'s `isSafeUrl()` rejects anything not starting with `http(s)://` before it's used as an href, guarding against a feed injecting a `javascript:` URI.
 
+**i18n is ko/en, split by where the string lives.** UI strings go through `extension/src/i18n.ts` (`useI18n()` + `t()`, a plain dict — no library); locale is `localStorage["techtab-locale"]` or a `navigator.language` ko-prefix check, toggled by the button right of the theme toggle. Brand names and keyword badges translate for **display only** via `sourceLabel()` / `keywordLabel()` — the raw `source` string is never rewritten (it keys localStorage, favicons, and `SOURCE_DOMAINS`). Dates use `Intl.RelativeTimeFormat`. Article titles are translated **server-side**: `worker/src/index.ts` calls the DeepL Free API (`api-free.deepl.com`, `DEEPL_API_KEY` secret) for newly-inserted rows only during the hourly cron, one batched request per feed, storing `title_en`; `/api/articles` returns it and the extension falls back to `title` when it's null. The `docs/` landing page has its own tiny inline-script i18n (`data-i18n` attributes) keyed off the same `techtab-locale`. Store-listing name/description come from `extension/public/_locales/{ko,en}/messages.json` via `__MSG_*__` in the manifest (`default_locale` is `ko`); the CWS dashboard listing copy and per-locale screenshots are separate and managed there.
+
 ## CI/CD (`.github/workflows/`)
 
 - `worker-deploy.yml` — pushes to `main` touching `worker/**` auto-deploy via `cloudflare/wrangler-action`. Needs the `CLOUDFLARE_API_TOKEN` repo secret; `wranglerVersion` is pinned to `"4"` to match `worker/package.json` (the action otherwise tries to install its own older wrangler and hits a peer-dep conflict with `@cloudflare/workers-types`).
@@ -57,6 +59,7 @@ There is no release-branch gate — commits go straight to `main`; the Chrome We
 - D1 queries stay parameterized (`.bind()`); never string-concatenate feed data into SQL.
 - `EXTENSION_ORIGIN` in `worker/src/index.ts` must stay an exact string match — never widen the CORS check to a wildcard or a broad prefix match.
 - `CLOUDFLARE_API_TOKEN` only ever lives in the GitHub Actions repo secret — never in `wrangler.toml`, a commit, or a log.
+- `DEEPL_API_KEY` only ever lives in the prod Wrangler secret (`wrangler secret put`) and the gitignored `worker/.dev.vars` — never in `wrangler.toml`, a commit, or a log.
 - After adding/bumping any dependency, run `npm audit` in that package and note whether the finding is dev-only tooling (esbuild/vite/wrangler's bundled deps — low urgency) or a runtime dependency actually shipped (e.g. `fast-xml-parser` — fix promptly).
 
 **Stability** — code that type-checks or builds isn't proof it works; this repo has shipped a layout-shift bug, a hit-area regression, and a dark-mode FOUC fix that looked fine on read-through and even in `npm run dev`, but was silently dead in the real extension:
