@@ -144,19 +144,33 @@ async function collectFeeds(env: Env) {
   }
 }
 
+// /api/articles 응답을 아이솔레이트 메모리에 짧게 캐시 — 반복/폭주 요청이 매번 D1까지 내려가지 않도록.
+// 데이터는 매시간 cron으로만 바뀌므로 60초 stale은 무해하고, CORS 헤더는 요청마다 새로 붙임(dev/prod origin 구분 유지).
+let articlesCache: { at: number; body: string } | null = null;
+const ARTICLES_TTL_MS = 60_000;
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/articles") {
-      const { results } = await env.DB.prepare(
-        `SELECT title, title_en, link, source, published_at FROM (
-           SELECT *, ROW_NUMBER() OVER (PARTITION BY source ORDER BY published_at DESC) AS rn
-           FROM articles
-         ) WHERE rn <= 10
-         ORDER BY published_at DESC`
-      ).all();
-      return Response.json(results, { headers: corsHeaders(request) });
+      if (!articlesCache || Date.now() - articlesCache.at > ARTICLES_TTL_MS) {
+        const { results } = await env.DB.prepare(
+          `SELECT title, title_en, link, source, published_at FROM (
+             SELECT *, ROW_NUMBER() OVER (PARTITION BY source ORDER BY published_at DESC) AS rn
+             FROM articles
+           ) WHERE rn <= 10
+           ORDER BY published_at DESC`
+        ).all();
+        articlesCache = { at: Date.now(), body: JSON.stringify(results) };
+      }
+      return new Response(articlesCache.body, {
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=60",
+          ...corsHeaders(request),
+        },
+      });
     }
 
     return new Response("not found", { status: 404 });
