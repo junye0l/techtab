@@ -75,6 +75,15 @@ npm install
 npx wrangler login
 npx wrangler d1 create hackertab-kr   # wrangler.toml의 database_id 갱신 필요 · update database_id in wrangler.toml
 npm run db:init                       # 로컬 D1에 스키마 적용 · apply schema to local D1
+
+# 글 제목 한→영 번역용 DeepL 키 · DeepL key for KO→EN title translation
+echo 'DEEPL_API_KEY=<your-deepl-free-key:fx>' > .dev.vars   # 로컬 (gitignore됨) · local, gitignored
+npx wrangler secret put DEEPL_API_KEY                        # 배포용 · for the deployed worker
+
 npm run dev                           # 로컬 개발 서버 · local dev server
+curl http://localhost:8787/cdn-cgi/local/scheduled          # cron 1회 실행해 로컬 D1 채우기 · run the cron once to fill local D1
 npm run deploy                        # 배포 · deploy
 ```
+
+`.dev.vars`에 키가 없어도 `npm run dev`는 돌아가지만 `title_en`이 채워지지 않습니다.<br>
+`npm run dev` still works without the key — `title_en` just stays empty.
