@@ -159,30 +159,6 @@ export default {
       return Response.json(results, { headers: corsHeaders(request) });
     }
 
-    // 기존 글 title_en 백필용 임시 라우트 — 다 채운 뒤 다음 커밋에서 제거
-    if (url.pathname === "/admin/backfill") {
-      if (request.headers.get("Authorization") !== `Bearer ${env.DEEPL_API_KEY}`) {
-        return new Response("unauthorized", { status: 401 });
-      }
-      const { results } = await env.DB.prepare(
-        "SELECT link, title FROM articles WHERE title_en IS NULL LIMIT 50"
-      ).all<{ link: string; title: string }>();
-
-      const translated = await translateToEnglish(
-        results.map((r) => r.title),
-        env.DEEPL_API_KEY
-      );
-      let updated = 0;
-      for (let i = 0; i < results.length; i++) {
-        if (!translated[i]) continue;
-        await env.DB.prepare("UPDATE articles SET title_en = ? WHERE link = ?")
-          .bind(translated[i], results[i].link)
-          .run();
-        updated++;
-      }
-      return Response.json({ batch: results.length, updated });
-    }
-
     return new Response("not found", { status: 404 });
   },
 
