@@ -71,3 +71,4 @@ There is no release-branch gate — commits go straight to `main`; the Chrome We
 ## User preferences
 
 - Never bump `extension/package.json` / `extension/public/manifest.json` version on your own — even when landing a real fix worth shipping. Only bump when the user explicitly asks for it.
+- Never `git commit` (or `git push`) on your own — always show the diff and ask first, even for small or obviously-correct changes. The user decides when something gets committed.
