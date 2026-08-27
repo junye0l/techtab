@@ -9,3 +9,9 @@ database_id = "82199233-01fe-48a2-87d5-78dde44d44e2"
 
 [triggers]
 crons = ["0 * * * *"]
+
+# /api/articles IP당 60초에 100req 상한 (period는 10 또는 60만 허용)
+[[ratelimits]]
+name = "API_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 100, period = 60 }

@@ -1,12 +1,28 @@
 import { XMLParser } from "fast-xml-parser";
 import { FEEDS } from "./feeds";
 
+// Workers Rate Limiting 바인딩 (wrangler.toml의 [[unstable_rate_limits]])
+interface RateLimit {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
+
 export interface Env {
   DB: D1Database;
   DEEPL_API_KEY: string;
+  API_RATE_LIMITER: RateLimit;
 }
 
 const EXTENSION_ORIGIN = "chrome-extension://kobpfgadkgconpdpdppekbioiebnoggc";
+
+// IP당 요청 상한. 바인딩이 없거나 에러나면 통과시킴 — rate limiter가 API 자체를 죽이면 안 됨
+async function withinRateLimit(env: Env, key: string): Promise<boolean> {
+  try {
+    const { success } = await env.API_RATE_LIMITER.limit({ key });
+    return success;
+  } catch {
+    return true;
+  }
+}
 
 // 새로 저장된 글 제목만 영어로 번역 (DeepL Free). 한 요청에 최대 50개, 실패 시 전부 null → 확장에서 원문 폴백
 async function translateToEnglish(titles: string[], apiKey: string): Promise<(string | null)[]> {
@@ -154,6 +170,11 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/articles") {
+      const clientIp = request.headers.get("CF-Connecting-IP") ?? "unknown";
+      if (!(await withinRateLimit(env, clientIp))) {
+        return new Response("rate limited", { status: 429, headers: corsHeaders(request) });
+      }
+
       if (!articlesCache || Date.now() - articlesCache.at > ARTICLES_TTL_MS) {
         const { results } = await env.DB.prepare(
           `SELECT title, title_en, link, source, published_at FROM (
