@@ -46,7 +46,7 @@ TechTab ("Tech Tab - 새 탭에서 만나는 국내 빅테크 개발 뉴스") is
 
 - `worker-deploy.yml` — pushes to `main` touching `worker/**` auto-deploy (also `workflow_dispatch` for a manual re-run). Runs `npm ci && npm run deploy` in `worker/` with `CLOUDFLARE_API_TOKEN` from repo secrets — i.e. the repo-pinned `wrangler` (`worker/package.json`, `^4`), not `cloudflare/wrangler-action`. The wrapper action was dropped because the repo's Actions allowlist only permits github-owned actions, which made it `startup_failure` at 0s.
 - `extension-build.yml` — push/PR touching `extension/**` runs `npm run build` as a break-check only; it does not deploy or publish anything.
-- `extension-release.yml` — pushing a `v*` tag builds, zips, and attaches the extension to a GitHub Release (see "Releasing" above).
+- `extension-release.yml` — pushing a `v*` tag (or `workflow_dispatch`) builds, zips, and attaches the extension to a GitHub Release via the preinstalled `gh` CLI (`gh release create --generate-notes`), not `softprops/action-gh-release` — same Actions-allowlist reason as `worker-deploy.yml`. Needs `permissions: contents: write` (set on the job).
 
 There is no release-branch gate — commits go straight to `main`; the Chrome Web Store review process is itself the gate for the extension, and the worker is low-risk enough to auto-deploy on every push.
 
