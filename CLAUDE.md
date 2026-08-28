@@ -44,7 +44,7 @@ TechTab ("Tech Tab - 새 탭에서 만나는 국내 빅테크 개발 뉴스") is
 
 ## CI/CD (`.github/workflows/`)
 
-- `worker-deploy.yml` — pushes to `main` touching `worker/**` auto-deploy via `cloudflare/wrangler-action`. Needs the `CLOUDFLARE_API_TOKEN` repo secret; `wranglerVersion` is pinned to `"4"` to match `worker/package.json` (the action otherwise tries to install its own older wrangler and hits a peer-dep conflict with `@cloudflare/workers-types`).
+- `worker-deploy.yml` — pushes to `main` touching `worker/**` auto-deploy (also `workflow_dispatch` for a manual re-run). Runs `npm ci && npm run deploy` in `worker/` with `CLOUDFLARE_API_TOKEN` from repo secrets — i.e. the repo-pinned `wrangler` (`worker/package.json`, `^4`), not `cloudflare/wrangler-action`. The wrapper action was dropped because the repo's Actions allowlist only permits github-owned actions, which made it `startup_failure` at 0s.
 - `extension-build.yml` — push/PR touching `extension/**` runs `npm run build` as a break-check only; it does not deploy or publish anything.
 - `extension-release.yml` — pushing a `v*` tag builds, zips, and attaches the extension to a GitHub Release (see "Releasing" above).
 

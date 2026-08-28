@@ -20,8 +20,9 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: worker
-          wranglerVersion: "4"
+      # Use the repo-pinned wrangler (worker/package.json, ^4) directly instead of
+      # cloudflare/wrangler-action — the repo's Actions allowlist only permits
+      # github-owned actions, which made the wrapper fail at startup.
+      - run: npm run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
