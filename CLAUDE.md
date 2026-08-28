@@ -72,3 +72,12 @@ There is no release-branch gate — commits go straight to `main`; the Chrome We
 
 - Never bump `extension/package.json` / `extension/public/manifest.json` version on your own — even when landing a real fix worth shipping. Only bump when the user explicitly asks for it.
 - Never `git commit` (or `git push`) on your own — always show the diff and ask first, even for small or obviously-correct changes. The user decides when something gets committed.
+
+## Version planning workflow
+
+Non-trivial version work (new features, source-list changes, multi-part refactors) is planned before any code is written:
+
+- The plan lives in `NEXT_VERSION.md` at the repo root, kept out of git via `.git/info/exclude` (not `.gitignore` — the ignore rule itself must not be committed either). Edits to it never show in `git status`.
+- Build the plan **collaboratively, through discussion** — propose, the user reacts, iterate. Record decisions with their rationale, keep an explicit list of open discussion points, and do the legwork the plan needs (e.g. probing feed URLs, measuring existing CSS) rather than guessing.
+- **Do not start implementing until the user says the plan is verified and settled.** "Let's discuss the next version" is a request to edit `NEXT_VERSION.md`, not to touch `extension/` or `worker/`.
+- Once the plan's contents have shipped, delete or clear `NEXT_VERSION.md`.
