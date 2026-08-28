@@ -26,6 +26,10 @@ jobs:
           zip -r "../techtab-${{ github.ref_name }}.zip" . -x ".*"
       # gh CLI (preinstalled on the runner) instead of softprops/action-gh-release —
       # the repo's Actions allowlist permits github-owned actions only.
-      - run: gh release create "${{ github.ref_name }}" "techtab-${{ github.ref_name }}.zip" --title "${{ github.ref_name }}" --generate-notes
+      # Idempotent: create the release, or (if the tag was force-moved and the
+      # release already exists) just replace the zip asset.
+      - run: |
+          gh release create "${{ github.ref_name }}" "techtab-${{ github.ref_name }}.zip" --title "${{ github.ref_name }}" --generate-notes \
+            || gh release upload "${{ github.ref_name }}" "techtab-${{ github.ref_name }}.zip" --clobber
         env:
           GH_TOKEN: ${{ github.token }}
