@@ -30,7 +30,9 @@ TechTab ("Tech Tab - 새 탭에서 만나는 국내 빅테크 개발 뉴스") is
 
 ## Architecture
 
-**Data flow:** `worker/src/feeds.ts` lists ~21 hardcoded `{source, url}` RSS/Atom feeds → an hourly cron (`worker/src/index.ts`, `scheduled()`) fetches and upserts them into the D1 `articles` table (`worker/schema.sql`) → `GET /api/articles` returns the latest 10 per source → `extension/src/App.tsx` fetches that on load and renders one column per source.
+**Data flow:** `worker/src/feeds.ts` lists ~23 hardcoded `{source, url}` RSS/Atom feeds → an hourly cron (`worker/src/index.ts`, `scheduled()`) fetches and upserts them into the D1 `articles` table (`worker/schema.sql`) → `GET /api/articles` returns the latest 10 per source → `extension/src/App.tsx` fetches that on load and renders one column per source.
+
+`App.tsx` has three mutually-exclusive views toggled from the header: the per-source board (default), the bookmarks grid (`showBookmarksOnly`), and a "latest posts" grid (`showRecentFeed`, opened by the `NEW` button — which pulses via `.new-toggle-bounce` when there's an article newer than `localStorage["techtab-recent-feed-seen"]`, showing the last 7 days across all sources, newest first, capped at 40). Both grids reuse the `.board` 5-col grid via the `FlatFeed` component, rendering `ArticleCard`s directly instead of `.column`s.
 
 **CORS is origin-locked, not wildcard.** `worker/src/index.ts`'s `corsHeaders()` only reflects back `chrome-extension://kobpfgadkgconpdpdppekbioiebnoggc` (the published extension's fixed ID) or any `http://localhost:*` origin (so `npm run dev` keeps working); every other origin gets the extension-only header, which the browser then rejects. If you ever republish under a new extension ID, `EXTENSION_ORIGIN` here must be updated.
 

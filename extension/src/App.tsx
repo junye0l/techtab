@@ -11,6 +11,9 @@ const LogoIntroCanvas = lazy(() => import("./LogoIntroCanvas"));
 
 const API_URL = "https://techtab-worker.junyeolkim00.workers.dev/api/articles";
 const ARTICLES_PER_COLUMN = 8;
+const RECENT_FEED_DAYS = 7;
+const RECENT_FEED_LIMIT = 40;
+const RECENT_FEED_SEEN_KEY = "techtab-recent-feed-seen";
 
 interface Article {
   title: string;
@@ -105,6 +108,56 @@ function ArticleCard({
   );
 }
 
+// 최신 글 모음 / 북마크: .board 5열 그리드에 ArticleCard를 직접 깔아 렌더 (컬럼 없음)
+function FlatFeed({
+  title,
+  emptyText,
+  items,
+  readLinks,
+  bookmarks,
+  locale,
+  t,
+  onRead,
+  onToggleBookmark,
+}: {
+  title: string;
+  emptyText: string;
+  items: Article[];
+  readLinks: Set<string>;
+  bookmarks: Record<string, Article>;
+  locale: Locale;
+  t: TFunc;
+  onRead: (link: string) => void;
+  onToggleBookmark: (article: Article) => void;
+}) {
+  return (
+    <section className="flat-feed">
+      <div className="flat-feed-header">{title}</div>
+      {items.length === 0 ? (
+        <p className="empty-state">{emptyText}</p>
+      ) : (
+        <ul className="board board--flat">
+          {items.map((a, i) => (
+            <ArticleCard
+              key={a.link}
+              article={a}
+              index={i}
+              showSourceBadge
+              isRead={readLinks.has(a.link)}
+              isBookmarked={!!bookmarks[a.link]}
+              isNew={false}
+              locale={locale}
+              t={t}
+              onRead={() => onRead(a.link)}
+              onToggleBookmark={() => onToggleBookmark(a)}
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 type Theme = "light" | "dark";
 
 function getInitialTheme(): Theme {
@@ -181,6 +234,14 @@ export default function App() {
   );
   const [lastSeenBySource, setLastSeenBySource] = useState<Record<string, string>>(getInitialLastSeen);
   const [newArticleLinks, setNewArticleLinks] = useState<Set<string>>(new Set());
+  const [showRecentFeed, setShowRecentFeed] = useState(false);
+  const [recentFeedSeen, setRecentFeedSeen] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(RECENT_FEED_SEEN_KEY);
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -200,6 +261,13 @@ export default function App() {
       .then((res) => res.json())
       .then((data: Article[]) => {
         setArticles(data);
+
+        // 최초 방문(seen 키 없음)에는 NEW 버튼이 튀지 않도록 지금 시각으로 초기화
+        if (localStorage.getItem(RECENT_FEED_SEEN_KEY) == null) {
+          const now = new Date().toISOString();
+          localStorage.setItem(RECENT_FEED_SEEN_KEY, now);
+          setRecentFeedSeen(now);
+        }
 
         // 세션 시작 시 한 번만: 이미 추가해둔 컬럼에서 마지막으로 본 시각 이후 올라온 글을 NEW로 표시
         const newLinks = new Set<string>();
@@ -273,7 +341,9 @@ export default function App() {
   const columnsBySource = useMemo(() => new Map(columns), [columns]);
   const visibleColumns = order
     .filter((source) => selectedSources.has(source) || exitingSources.has(source))
-    .map((source): [string, Article[]] => [source, columnsBySource.get(source) ?? []]);
+    .map((source): [string, Article[]] => [source, columnsBySource.get(source) ?? []])
+    // 피드 목록에서 빠졌거나 아직 크롤 전인 소스는 빈 컬럼으로 남지 않도록 제외 (제거 애니메이션 중인 건 유지)
+    .filter(([source, items]) => items.length > 0 || exitingSources.has(source));
   const showEmptyHero = articles.length > 0 && visibleColumns.length === 0;
   const setColumnRef = useFlip(visibleColumns.map(([source]) => source));
 
@@ -319,6 +389,46 @@ export default function App() {
     (a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime()
   );
 
+  // 최근 7일 안에 올라온 글을 소스 상관없이 최신순으로 모아 상위 40개
+  const recentList = useMemo(() => {
+    const cutoff = Date.now() - RECENT_FEED_DAYS * 24 * 60 * 60 * 1000;
+    return articles
+      .filter((a) => a.published_at != null && new Date(a.published_at).getTime() >= cutoff)
+      .sort((a, b) => new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime())
+      // ponytail: /api/articles가 소스당 최신 10개만 줌 — 한 소스가 7일 내 11편+ 올리면 잘림. 그때 worker LIMIT 상향.
+      .slice(0, RECENT_FEED_LIMIT);
+  }, [articles]);
+
+  // 마지막으로 최신 글 모음을 연 시각 이후에 올라온 글이 있으면 NEW 버튼이 튐
+  const hasUnseenRecent = useMemo(() => {
+    if (recentFeedSeen == null) return false;
+    return articles.some((a) => a.published_at != null && a.published_at > recentFeedSeen);
+  }, [articles, recentFeedSeen]);
+
+  function toggleBookmarksOnly() {
+    setShowBookmarksOnly((v) => {
+      if (!v) setShowRecentFeed(false);
+      return !v;
+    });
+  }
+
+  function toggleRecentFeed() {
+    setShowRecentFeed((v) => {
+      const next = !v;
+      if (next) {
+        setShowBookmarksOnly(false);
+        const now = new Date().toISOString();
+        setRecentFeedSeen(now);
+        try {
+          localStorage.setItem(RECENT_FEED_SEEN_KEY, now);
+        } catch {
+          // 저장 실패는 무시 — 다음 로드에서 다시 판별
+        }
+      }
+      return next;
+    });
+  }
+
   return (
     <main className={`page ${showEmptyHero ? "page--hero" : ""}`}>
       <header className="header">
@@ -345,7 +455,7 @@ export default function App() {
         </div>
         <button
           className={`theme-toggle ${showBookmarksOnly ? "theme-toggle-active" : ""}`}
-          onClick={() => setShowBookmarksOnly((v) => !v)}
+          onClick={toggleBookmarksOnly}
           aria-label={t("bookmarksAria")}
         >
           <Bookmark size={16} fill={showBookmarksOnly ? "currentColor" : "none"} />
@@ -365,9 +475,18 @@ export default function App() {
           <Languages size={16} />
           <span className="lang-toggle-label">{locale === "ko" ? "KO" : "EN"}</span>
         </button>
+        <button
+          className={`theme-toggle new-toggle ${showRecentFeed ? "theme-toggle-active" : ""} ${
+            hasUnseenRecent && !showRecentFeed ? "new-toggle-bounce" : ""
+          }`}
+          onClick={toggleRecentFeed}
+          aria-label={t("latestFeedAria")}
+        >
+          NEW
+        </button>
       </header>
 
-      {!showBookmarksOnly && columns.length > 0 && (
+      {!showBookmarksOnly && !showRecentFeed && columns.length > 0 && (
         <div className="chips-wrap">
           <div className={`chips-collapse ${filtersCollapsed ? "" : "chips-collapse-expanded"}`}>
             <div className="chips">
@@ -395,7 +514,7 @@ export default function App() {
 
       {articles.length === 0 && <p className="empty-state">{t("loading")}</p>}
 
-      {!showBookmarksOnly && showEmptyHero && (
+      {!showBookmarksOnly && !showRecentFeed && showEmptyHero && (
         <div className="empty-hero">
           <Suspense fallback={<div className="logo-intro-canvas" />}>
             <LogoIntroCanvas color={theme === "dark" ? "#ededed" : "#171717"} />
@@ -407,36 +526,30 @@ export default function App() {
         </div>
       )}
 
-      {showBookmarksOnly ? (
-        <div className="board">
-          <section className="column column--bookmarks">
-            <div className="column-header">
-              <Bookmark size={20} />
-              {t("bookmarks")} ({bookmarkList.length})
-            </div>
-            {bookmarkList.length === 0 ? (
-              <p className="empty-state">{t("bookmarksEmpty")}</p>
-            ) : (
-              <ul className="column-list">
-                {bookmarkList.map((a, i) => (
-                  <ArticleCard
-                    key={a.link}
-                    article={a}
-                    index={i}
-                    showSourceBadge
-                    isRead={readLinks.has(a.link)}
-                    isBookmarked
-                    isNew={false}
-                    locale={locale}
-                    t={t}
-                    onRead={() => markRead(a.link)}
-                    onToggleBookmark={() => toggleBookmark(a)}
-                  />
-                ))}
-              </ul>
-            )}
-          </section>
-        </div>
+      {showRecentFeed ? (
+        <FlatFeed
+          title={t("latestFeed")}
+          emptyText={t("latestFeedEmpty")}
+          items={recentList}
+          readLinks={readLinks}
+          bookmarks={bookmarks}
+          locale={locale}
+          t={t}
+          onRead={markRead}
+          onToggleBookmark={toggleBookmark}
+        />
+      ) : showBookmarksOnly ? (
+        <FlatFeed
+          title={`${t("bookmarks")} (${bookmarkList.length})`}
+          emptyText={t("bookmarksEmpty")}
+          items={bookmarkList}
+          readLinks={readLinks}
+          bookmarks={bookmarks}
+          locale={locale}
+          t={t}
+          onRead={markRead}
+          onToggleBookmark={toggleBookmark}
+        />
       ) : (
         <div className={`board ${visibleColumns.length > 0 && visibleColumns.length <= 3 ? "board--center" : ""}`}>
           {visibleColumns.map(([source, items]) => {

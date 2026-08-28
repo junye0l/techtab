@@ -32,6 +32,9 @@ const KO = {
   bookmarksEmpty: "저장한 글이 없어요. 카드에 마우스를 올려 북마크 아이콘을 눌러보세요.",
   showMore: "더보기",
   justNow: "방금 전",
+  latestFeed: "최신 글 모음",
+  latestFeedEmpty: "최근 7일간 올라온 글이 없어요.",
+  latestFeedAria: "최신 글 모음 보기",
 } as const;
 
 export type MessageKey = keyof typeof KO;
@@ -56,6 +59,9 @@ const MESSAGES: Record<Locale, Record<MessageKey, string>> = {
     bookmarksEmpty: "No saved posts yet. Hover a card and tap the bookmark icon.",
     showMore: "Show more",
     justNow: "just now",
+    latestFeed: "Latest",
+    latestFeedEmpty: "No posts in the last 7 days.",
+    latestFeedAria: "Show latest posts",
   },
 };
 

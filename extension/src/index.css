@@ -178,6 +178,27 @@ body {
   font-size: 11px;
 }
 
+.new-toggle {
+  width: auto;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.new-toggle-bounce {
+  color: var(--color-link);
+  animation: new-bounce 1.4s ease-in-out infinite;
+}
+
+@keyframes new-bounce {
+  0%, 46%, 100% { transform: translateY(0); }
+  10% { transform: translateY(-7px); }
+  22% { transform: translateY(0); }
+  32% { transform: translateY(-3px); }
+}
+
 .chips-wrap {
   display: flex;
   flex-direction: column;
@@ -291,6 +312,22 @@ body {
   justify-content: center;
 }
 
+/* 최신 글 모음 / 북마크: .board 그리드를 그대로 쓰되 .column 대신 카드를 직접 깖 */
+.board--flat {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  align-content: start;
+}
+
+.flat-feed-header {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  padding-bottom: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
 .column {
   position: relative;
   min-width: 0;
@@ -303,13 +340,6 @@ body {
 .board--center .column {
   /* 5칸 그리드(repeat(5, 1fr))와 같은 폭이 되도록: (전체 폭 - gap 4개) / 5 */
   flex: 0 0 calc((100% - 4 * var(--space-md)) / 5);
-}
-
-.column--bookmarks {
-  grid-column: 1 / -1;
-  width: 100%;
-  max-width: 640px;
-  margin: 0 auto;
 }
 
 .column-drop-before::before,
@@ -559,6 +589,7 @@ body {
 .empty-state {
   color: var(--color-mute);
   font-size: 14px;
+  text-align: center;
 }
 
 .empty-hero {
