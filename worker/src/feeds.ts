@@ -23,7 +23,7 @@ export const FEEDS: { source: string; url: string }[] = [
   { source: "올리브영", url: "https://oliveyoung.tech/rss.xml" },
   // v0.3.0에서 추가 (2026-08-28, 최근 6개월 내 게시 확인)
   { source: "인프런", url: "https://tech.inflab.com/rss.xml" },
-  { source: "마이리얼트립", url: "https://medium.com/feed/myrealtrip-product" },
+  { source: "마이리얼트립", url: "https://blog.myrealtrip.com/rss/" }, // 2026-06 Medium → 자체 도메인 이전
   { source: "스캐터랩", url: "https://tech.scatterlab.co.kr/rss" },
   { source: "버즈빌", url: "https://tech.buzzvil.com/index.xml" },
   { source: "데보션", url: "https://devocean.sk.com/blog/rss.do" },

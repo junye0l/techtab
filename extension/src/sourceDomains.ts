@@ -1,6 +1,9 @@
-// techblog.woowahan.com에는 등록된 파비콘이 없어 로컬 에셋(우아한형제들 로고 텍스트 크롭)을 대신 사용
+// Google 파비콘 서비스가 인식하지 못하는 소스는 번들 로컬 에셋으로 대체
+//  - 우아한형제들: techblog.woowahan.com에 등록된 파비콘 없음 (로고 텍스트 크롭)
+//  - 요기요: yogiyo.co.kr 파비콘이 Google 인덱스에 없음 (자체 파비콘 그대로 사용)
 const LOCAL_ICON_OVERRIDES: Record<string, string> = {
   "우아한형제들": "icons/sources/woowahan.png",
+  "요기요": "icons/sources/yogiyo.png",
 };
 
 // 컬럼 헤더에 표시할 파비콘용 도메인 (favicon이 인식하기 좋은 실제 브랜드 도메인 기준)
@@ -21,10 +24,10 @@ export const SOURCE_DOMAINS: Record<string, string> = {
   "여기어때": "gccompany.co.kr",
   "올리브영": "oliveyoung.co.kr",
   "인프런": "inflearn.com",
-  "마이리얼트립": "myrealtrip.com",
+  "마이리얼트립": "blog.myrealtrip.com",
   "스캐터랩": "scatterlab.co.kr",
   "버즈빌": "buzzvil.com",
-  "데보션": "devocean.sk.com",
+  "데보션": "sk.com",
   "데브시스터즈": "devsisters.com",
   "요기요": "yogiyo.co.kr",
 };
