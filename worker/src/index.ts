@@ -176,13 +176,19 @@ export default {
       }
 
       if (!articlesCache || Date.now() - articlesCache.at > ARTICLES_TTL_MS) {
+        // FEEDS에서 빠진 소스의 기존 행은 D1에 남아있으므로 현재 목록으로 필터 (소스명은 .bind로 파라미터화)
+        const sources = FEEDS.map((f) => f.source);
+        const placeholders = sources.map(() => "?").join(", ");
         const { results } = await env.DB.prepare(
           `SELECT title, title_en, link, source, published_at FROM (
              SELECT *, ROW_NUMBER() OVER (PARTITION BY source ORDER BY published_at DESC) AS rn
              FROM articles
+             WHERE source IN (${placeholders})
            ) WHERE rn <= 10
            ORDER BY published_at DESC`
-        ).all();
+        )
+          .bind(...sources)
+          .all();
         articlesCache = { at: Date.now(), body: JSON.stringify(results) };
       }
       return new Response(articlesCache.body, {
