@@ -6,14 +6,14 @@
 
 *A Chrome extension that gathers Korean big-tech engineering blogs onto your new-tab page.*
 
-네이버, 카카오, 토스, 쿠팡, 당근마켓 등 21개 기업의 기술 블로그 RSS를 매시간 자동으로 수집해서, 관심 있는 기업만 골라 나만의 피드로 볼 수 있습니다.
+네이버, 카카오, 토스, 우아한형제들, 당근마켓 등 23개 기업의 기술 블로그 RSS를 매시간 자동으로 수집해서, 관심 있는 기업만 골라 나만의 피드로 볼 수 있습니다.
 
-*It auto-collects the RSS feeds of 21 companies — NAVER, Kakao, Toss, Coupang, Daangn, and more — every hour, so you can pick the ones you care about and build your own feed.*
+*It auto-collects the RSS feeds of 23 companies — NAVER, Kakao, Toss, Woowahan, Daangn, and more — every hour, so you can pick the ones you care about and build your own feed.*
 
 ## 주요 기능 · Features
 
-- **21개 국내 기업 기술 블로그** RSS 자동 수집 (매시간 갱신)<br>
-  *RSS from 21 Korean companies' engineering blogs, auto-collected and refreshed hourly*
+- **23개 국내 기업 기술 블로그** RSS 자동 수집 (매시간 갱신)<br>
+  *RSS from 23 Korean companies' engineering blogs, auto-collected and refreshed hourly*
 
 - 원하는 기업만 골라서 보드에 추가/제거, **드래그 앤 드롭**으로 순서 변경<br>
   *Add or remove only the companies you want, and reorder columns by drag and drop*
@@ -23,6 +23,9 @@
 
 - 마지막으로 본 시점 이후 올라온 글에 **NEW 뱃지**<br>
   *A NEW badge on posts published since your last visit*
+
+- **`NEW` 버튼**으로 최근 7일간 모든 블로그의 새 글을 소스 구분 없이 한 화면에 모아보기<br>
+  *A `NEW` button gathers every post from the last 7 days across all blogs into one view*
 
 - 제목 키워드 자동 추출(AI, Kafka, LLM 등) 배지 표시<br>
   *Auto-extracted keyword badges from titles (AI, Kafka, LLM, …)*
