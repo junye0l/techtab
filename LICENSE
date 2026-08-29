@@ -1,0 +1,77 @@
+Copyright (c) 2026 junye0l. All rights reserved.
+
+================================================================================
+ENGLISH
+================================================================================
+
+This source code is published only for transparency — so that the Chrome Web
+Store review process and end users can inspect what the "Tech Tab" extension
+does. Publication does NOT grant any license to the code.
+
+You MAY:
+  - View and read this source code.
+
+You MAY NOT, without prior written permission from the copyright holder:
+  - Use, run, or build this code (in whole or in part) for any purpose;
+  - Copy, reproduce, or store it beyond what your browser/GitHub does to
+    display it;
+  - Modify it or create derivative works from it;
+  - Redistribute, sublicense, sell, or publish it or any derivative, in any
+    form or medium;
+  - Publish an extension, application, or service derived from it, including
+    to the Chrome Web Store or any other store.
+
+Forking on GitHub is permitted solely as a mechanism of the GitHub platform
+and confers none of the rights withheld above.
+
+The name "Tech Tab", the project's logo, and related branding are trademarks
+of the copyright holder and are not covered by any permission, express or
+implied.
+
+Third-party components remain under their own licenses.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
+SOFTWARE OR ITS USE.
+
+For permission requests: junyeolkim00@gmail.com
+
+================================================================================
+한국어
+================================================================================
+
+이 소스 코드는 오직 투명성 확보를 위해 공개됩니다 — Chrome 웹 스토어 심사와
+최종 사용자가 "Tech Tab" 확장 프로그램의 동작을 확인할 수 있도록 하기 위함
+입니다. 공개는 코드에 대한 어떠한 사용 권한도 부여하지 않습니다.
+
+허용되는 것:
+  - 이 소스 코드의 열람 및 읽기.
+
+저작권자의 사전 서면 허가 없이 다음을 할 수 없습니다:
+  - 이 코드(전부 또는 일부)를 어떤 목적으로든 사용·실행·빌드하는 행위;
+  - 브라우저나 GitHub가 표시를 위해 하는 것을 넘어서 복제·저장하는 행위;
+  - 수정하거나 2차적 저작물을 만드는 행위;
+  - 어떤 형태나 매체로든 재배포·서브라이선스·판매·공개하는 행위(2차적
+    저작물 포함);
+  - 이 코드에서 파생된 확장 프로그램·앱·서비스를 Chrome 웹 스토어를 비롯한
+    어떤 스토어에든 게시하는 행위.
+
+GitHub에서의 fork는 GitHub 플랫폼의 기능으로서만 허용되며, 위에서 유보한
+권리를 전혀 부여하지 않습니다.
+
+"Tech Tab"이라는 이름, 프로젝트 로고 및 관련 브랜딩은 저작권자의 상표이며
+명시적이든 묵시적이든 어떠한 허가에도 포함되지 않습니다.
+
+제3자 구성요소는 각자의 라이선스를 따릅니다.
+
+이 소프트웨어는 명시적이든 묵시적이든 어떠한 종류의 보증도 없이 "있는 그대로"
+제공됩니다. 저작권자는 소프트웨어 또는 그 사용과 관련하여 발생하는 어떠한
+청구·손해·책임에 대해서도 책임지지 않습니다.
+
+이용 허가 문의: junyeolkim00@gmail.com
+
+================================================================================
+
+In case of any conflict between the English and Korean texts, the English
+text governs. 영문본과 국문본이 상충하는 경우 영문본이 우선합니다.
