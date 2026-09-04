@@ -567,12 +567,13 @@ export default function App() {
       {!showBookmarksOnly && !showRecentFeed && !showGlobalFeed && columns.length > 0 && (
         <div className="chips-wrap">
           <div className={`chips-collapse ${filtersCollapsed ? "" : "chips-collapse-expanded"}`}>
-            <div className="chips">
+            <div className="chips" aria-hidden={filtersCollapsed || undefined}>
               {columns.map(([source]) => (
                 <button
                   key={source}
                   className={`chip ${selectedSources.has(source) ? "chip-active" : ""}`}
                   onClick={() => toggleSource(source)}
+                  tabIndex={filtersCollapsed ? -1 : undefined}
                 >
                   <img src={faviconUrl(source)} alt="" className="chip-icon" />
                   {sourceLabel(source, locale)}

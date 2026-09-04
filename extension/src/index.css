@@ -223,11 +223,14 @@ body {
   overflow: hidden;
   padding: 3px 0;
   opacity: 0;
+  /* 접힌 상태에서도 padding 높이(6px)만큼 얇은 히트 영역이 남아 칩이 클릭되던 것 차단 */
+  pointer-events: none;
   transition: opacity 0.15s ease;
 }
 
 .chips-collapse-expanded > .chips {
   opacity: 1;
+  pointer-events: auto;
   transition: opacity 0.2s ease 0.05s;
 }
 
