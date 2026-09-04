@@ -116,6 +116,11 @@ function extractItems(strippedXml: string): { title: string; link: string; pubDa
 // 정상 피드(예: 본문에 base64 이미지가 박힌 글)까지 오탐으로 걸러내므로, 반드시 stripHeavyTags 이후에 검사
 const MAX_STRIPPED_FEED_BYTES = 5 * 1024 * 1024;
 
+// 대부분 피드는 최근 10~20개만 주지만, 일부(예: shopify.engineering — 428개, huggingface.co/blog — 859개)는
+// 전체 아카이브를 통째로 내려줌. 한도 없이 다 INSERT하면 그 피드 하나가 크론의 시간/subrequest 예산을 다 써서
+// 뒤 순서 피드가 아예 처리되지 못함. /api/articles는 어차피 소스당 최신 10개만 쓰므로 넉넉히 30개면 충분.
+const MAX_ITEMS_PER_FEED = 30;
+
 async function collectFeeds(env: Env, region: Region | null) {
   const now = new Date().toISOString();
   const feeds = region ? FEEDS.filter((f) => f.region === region) : FEEDS;
@@ -131,7 +136,8 @@ async function collectFeeds(env: Env, region: Region | null) {
         continue;
       }
 
-      const items = extractItems(xml);
+      // 피드는 관례상 최신순이라 앞에서부터 자르면 최신 글이 남음
+      const items = extractItems(xml).slice(0, MAX_ITEMS_PER_FEED);
 
       for (const item of items) {
         const parsedDate = item.pubDate ? new Date(item.pubDate) : null;
