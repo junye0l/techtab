@@ -188,8 +188,9 @@ async function collectFeeds(env: Env, region: Region | null) {
 }
 
 // /api/articles 응답을 아이솔레이트 메모리에 짧게 캐시 — 반복/폭주 요청이 매번 D1까지 내려가지 않도록.
+// region별로 다른 소스 집합을 리턴하므로 캐시도 region별로 분리.
 // 데이터는 매시간 cron으로만 바뀌므로 60초 stale은 무해하고, CORS 헤더는 요청마다 새로 붙임(dev/prod origin 구분 유지).
-let articlesCache: { at: number; body: string } | null = null;
+const articlesCache = new Map<string, { at: number; body: string }>();
 const ARTICLES_TTL_MS = 60_000;
 
 export default {
@@ -202,9 +203,16 @@ export default {
         return new Response("rate limited", { status: 429, headers: corsHeaders(request) });
       }
 
-      if (!articlesCache || Date.now() - articlesCache.at > ARTICLES_TTL_MS) {
+      // 기본값은 국내만 — v0.4.0 이전(글로벌 개념이 없는) 익스텐션이 파라미터 없이 호출해도
+      // 새로 생긴 글로벌 소스가 필터 없이 그대로 노출되지 않도록. 글로벌 포함은 명시적 옵트인.
+      const region = url.searchParams.get("region") === "all" ? "all" : "kr";
+      const cached = articlesCache.get(region);
+
+      if (!cached || Date.now() - cached.at > ARTICLES_TTL_MS) {
         // FEEDS에서 빠진 소스의 기존 행은 D1에 남아있으므로 현재 목록으로 필터 (소스명은 .bind로 파라미터화)
-        const sources = FEEDS.map((f) => f.source);
+        const sources = (region === "all" ? FEEDS : FEEDS.filter((f) => f.region === "kr")).map(
+          (f) => f.source
+        );
         const placeholders = sources.map(() => "?").join(", ");
         const { results } = await env.DB.prepare(
           `SELECT title, title_en, title_ko, link, source, published_at FROM (
@@ -216,9 +224,9 @@ export default {
         )
           .bind(...sources)
           .all();
-        articlesCache = { at: Date.now(), body: JSON.stringify(results) };
+        articlesCache.set(region, { at: Date.now(), body: JSON.stringify(results) });
       }
-      return new Response(articlesCache.body, {
+      return new Response(articlesCache.get(region)!.body, {
         headers: {
           "Content-Type": "application/json",
           "Cache-Control": "public, max-age=60",
