@@ -10,8 +10,10 @@ import { useFlip } from "./useFlip";
 const LogoIntroCanvas = lazy(() => import("./LogoIntroCanvas"));
 
 // 로컬에서 로컬 worker로 붙여보려면 VITE_API_URL 지정 (예: http://localhost:8787/api/articles)
+// worker는 파라미터 없으면 국내만 줌(구버전 익스텐션 하위호환) — 글로벌 포함은 명시적으로 요청
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://techtab-worker.junyeolkim00.workers.dev/api/articles";
+  (import.meta.env.VITE_API_URL || "https://techtab-worker.junyeolkim00.workers.dev/api/articles") +
+  "?region=all";
 const ARTICLES_PER_COLUMN = 8;
 const RECENT_FEED_DAYS = 7;
 const RECENT_FEED_LIMIT = 40;
