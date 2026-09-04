@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import { FEEDS } from "./feeds";
+import { FEEDS, type Region } from "./feeds";
 
 // Workers Rate Limiting 바인딩 (wrangler.toml의 [[unstable_rate_limits]])
 interface RateLimit {
@@ -116,10 +116,11 @@ function extractItems(strippedXml: string): { title: string; link: string; pubDa
 // 정상 피드(예: 본문에 base64 이미지가 박힌 글)까지 오탐으로 걸러내므로, 반드시 stripHeavyTags 이후에 검사
 const MAX_STRIPPED_FEED_BYTES = 5 * 1024 * 1024;
 
-async function collectFeeds(env: Env) {
+async function collectFeeds(env: Env, region: Region | null) {
   const now = new Date().toISOString();
+  const feeds = region ? FEEDS.filter((f) => f.region === region) : FEEDS;
 
-  for (const feed of FEEDS) {
+  for (const feed of feeds) {
     try {
       const res = await fetch(feed.url, { headers: { "User-Agent": "techtab-bot" } });
       if (!res.ok) continue;
@@ -223,7 +224,11 @@ export default {
     return new Response("not found", { status: 404 });
   },
 
-  async scheduled(_event: ScheduledEvent, env: Env): Promise<void> {
-    await collectFeeds(env);
+  async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
+    // wrangler.toml crons: "0 * * * *" → 국내, "30 * * * *" → 글로벌.
+    // 로컬 수동 트리거(cron 문자열 없음)는 둘 다 수집.
+    const region: Region | null =
+      event.cron === "30 * * * *" ? "global" : event.cron === "0 * * * *" ? "kr" : null;
+    await collectFeeds(env, region);
   },
 };

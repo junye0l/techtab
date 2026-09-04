@@ -8,7 +8,8 @@ database_name = "hackertab-kr"
 database_id = "82199233-01fe-48a2-87d5-78dde44d44e2"
 
 [triggers]
-crons = ["0 * * * *"]
+# 무료 플랜 subrequest 상한(요청당 50) 회피 — 국내는 매시 :00, 글로벌은 :30에 나눠 수집
+crons = ["0 * * * *", "30 * * * *"]
 
 # /api/articles IP당 60초에 100req 상한 (period는 10 또는 60만 허용)
 [[ratelimits]]
