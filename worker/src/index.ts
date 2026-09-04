@@ -24,8 +24,13 @@ async function withinRateLimit(env: Env, key: string): Promise<boolean> {
   }
 }
 
-// 새로 저장된 글 제목만 영어로 번역 (DeepL Free). 한 요청에 최대 50개, 실패 시 전부 null → 확장에서 원문 폴백
-async function translateToEnglish(titles: string[], apiKey: string): Promise<(string | null)[]> {
+// 글 제목 배치 번역 (DeepL Free). 한 요청에 최대 50개, 실패 시 전부 null → 확장에서 원문 폴백
+async function translateTitles(
+  titles: string[],
+  apiKey: string,
+  sourceLang: string,
+  targetLang: string
+): Promise<(string | null)[]> {
   if (titles.length === 0) return [];
   try {
     const res = await fetch("https://api-free.deepl.com/v2/translate", {
@@ -34,7 +39,7 @@ async function translateToEnglish(titles: string[], apiKey: string): Promise<(st
         Authorization: `DeepL-Auth-Key ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ text: titles, source_lang: "KO", target_lang: "EN-US" }),
+      body: JSON.stringify({ text: titles, source_lang: sourceLang, target_lang: targetLang }),
     });
     if (!res.ok) {
       console.error(`DeepL request failed: ${res.status}`);
@@ -127,30 +132,45 @@ async function collectFeeds(env: Env) {
 
       const items = extractItems(xml);
 
-      const newItems: { link: string; title: string }[] = [];
       for (const item of items) {
         const parsedDate = item.pubDate ? new Date(item.pubDate) : null;
         const publishedAt = parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : now;
 
-        const result = await env.DB.prepare(
+        await env.DB.prepare(
           "INSERT OR IGNORE INTO articles (link, title, source, published_at, fetched_at) VALUES (?, ?, ?, ?, ?)"
         )
           .bind(item.link, item.title, feed.source, publishedAt, now)
           .run();
-
-        if (result.meta.changes > 0) newItems.push({ link: item.link, title: item.title });
       }
 
-      // 이번에 새로 저장된 글만 제목 번역 (피드당 DeepL 요청 1번)
-      if (newItems.length > 0) {
-        const translated = await translateToEnglish(
-          newItems.map((i) => i.title),
-          env.DEEPL_API_KEY
+      // 번역 방향은 피드 언어로 결정: 국내(ko) → title_en, 글로벌(en) → title_ko.
+      // targetCol은 이 삼항이 만든 고정 리터럴이라 외부 입력이 아님 (SQL 인젝션 무관).
+      const [sourceLang, targetLang, targetCol] =
+        feed.lang === "en"
+          ? (["EN", "KO", "title_ko"] as const)
+          : (["KO", "EN-US", "title_en"] as const);
+
+      // 이번에 새로 들어온 행 + 과거에 번역이 비어있는 행을 최근 것부터 최대 20개 채움.
+      // 새 글 번역 + 지난번 실패분 재시도 + 백필을 한 쿼리로 겸함 (피드당 DeepL 요청 1번).
+      // ponytail: 특정 제목이 계속 실패하면 매시간 재시도됨 — 상한 20이라 폭주는 아니고 원문 폴백이 있어 무해.
+      const { results: pending } = await env.DB.prepare(
+        `SELECT link, title FROM articles WHERE source = ? AND ${targetCol} IS NULL
+         ORDER BY published_at DESC LIMIT 20`
+      )
+        .bind(feed.source)
+        .all<{ link: string; title: string }>();
+
+      if (pending.length > 0) {
+        const translated = await translateTitles(
+          pending.map((r) => r.title),
+          env.DEEPL_API_KEY,
+          sourceLang,
+          targetLang
         );
-        for (let i = 0; i < newItems.length; i++) {
+        for (let i = 0; i < pending.length; i++) {
           if (!translated[i]) continue;
-          await env.DB.prepare("UPDATE articles SET title_en = ? WHERE link = ?")
-            .bind(translated[i], newItems[i].link)
+          await env.DB.prepare(`UPDATE articles SET ${targetCol} = ? WHERE link = ?`)
+            .bind(translated[i], pending[i].link)
             .run();
         }
       }
@@ -180,7 +200,7 @@ export default {
         const sources = FEEDS.map((f) => f.source);
         const placeholders = sources.map(() => "?").join(", ");
         const { results } = await env.DB.prepare(
-          `SELECT title, title_en, link, source, published_at FROM (
+          `SELECT title, title_en, title_ko, link, source, published_at FROM (
              SELECT *, ROW_NUMBER() OVER (PARTITION BY source ORDER BY published_at DESC) AS rn
              FROM articles
              WHERE source IN (${placeholders})
