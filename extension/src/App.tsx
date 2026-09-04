@@ -1,7 +1,7 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Bookmark, ChevronDown, GripVertical, Languages, Moon, Search, Sun } from "lucide-react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Bookmark, ChevronDown, Globe, GripVertical, Languages, Moon, Search, Sun } from "lucide-react";
 import "./index.css";
-import { faviconUrl, sourceLabel } from "./sourceDomains";
+import { faviconUrl, GLOBAL_SOURCES, sourceLabel } from "./sourceDomains";
 import { extractKeyword, keywordLabel } from "./keywords";
 import { useI18n, type Locale, type TFunc } from "./i18n";
 import GoogleIcon from "./GoogleIcon";
@@ -9,23 +9,39 @@ import { useFlip } from "./useFlip";
 
 const LogoIntroCanvas = lazy(() => import("./LogoIntroCanvas"));
 
-const API_URL = "https://techtab-worker.junyeolkim00.workers.dev/api/articles";
+// 로컬에서 로컬 worker로 붙여보려면 VITE_API_URL 지정 (예: http://localhost:8787/api/articles)
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://techtab-worker.junyeolkim00.workers.dev/api/articles";
 const ARTICLES_PER_COLUMN = 8;
 const RECENT_FEED_DAYS = 7;
 const RECENT_FEED_LIMIT = 40;
+const GLOBAL_FEED_LIMIT = 40;
+const REFETCH_MIN_INTERVAL_MS = 5 * 60 * 1000;
 const RECENT_FEED_SEEN_KEY = "techtab-recent-feed-seen";
 
 interface Article {
   title: string;
   title_en: string | null;
+  title_ko: string | null;
   link: string;
   source: string;
   published_at: string | null;
 }
 
-// 영어 모드에서 번역본이 있으면 그걸, 없으면(번역 실패/백필 전) 한국어 원문으로 폴백
+// 읽는 사람 언어의 번역본이 있으면 그걸, 없으면(번역 실패/백필 전, 또는 원문이 이미 그 언어) 원문으로 폴백
 function displayTitle(article: Article, locale: Locale): string {
-  return locale === "en" && article.title_en ? article.title_en : article.title;
+  const translated = locale === "en" ? article.title_en : article.title_ko;
+  return translated ?? article.title;
+}
+
+// "지금까지 존재하는 글 중 가장 최신"까지 봤다고 기록 — 미래 날짜(발행사 예약분·기기 시계 오차)인 글이
+// 섞여 있어도 seen 이 그걸 넘어서므로 NEW 표시가 계속 켜져 있지 않음
+function newestSeen(list: Article[]): string {
+  let max = new Date().toISOString();
+  for (const a of list) {
+    if (a.published_at != null && a.published_at > max) max = a.published_at;
+  }
+  return max;
 }
 
 function timeAgo(iso: string | null, locale: Locale, justNow: string): string {
@@ -235,6 +251,7 @@ export default function App() {
   const [lastSeenBySource, setLastSeenBySource] = useState<Record<string, string>>(getInitialLastSeen);
   const [newArticleLinks, setNewArticleLinks] = useState<Set<string>>(new Set());
   const [showRecentFeed, setShowRecentFeed] = useState(false);
+  const [showGlobalFeed, setShowGlobalFeed] = useState(false);
   const [recentFeedSeen, setRecentFeedSeen] = useState<string | null>(() => {
     try {
       return localStorage.getItem(RECENT_FEED_SEEN_KEY);
@@ -242,6 +259,7 @@ export default function App() {
       return null;
     }
   });
+  const lastFetchRef = useRef(0);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -261,12 +279,15 @@ export default function App() {
       .then((res) => res.json())
       .then((data: Article[]) => {
         setArticles(data);
+        lastFetchRef.current = Date.now();
 
-        // 최초 방문(seen 키 없음)에는 NEW 버튼이 튀지 않도록 지금 시각으로 초기화
+        const krData = data.filter((a) => !GLOBAL_SOURCES.has(a.source));
+
+        // 최초 방문(seen 키 없음): 지금까지 올라온 글 기준으로 초기화 → NEW 버튼이 안 튐
         if (localStorage.getItem(RECENT_FEED_SEEN_KEY) == null) {
-          const now = new Date().toISOString();
-          localStorage.setItem(RECENT_FEED_SEEN_KEY, now);
-          setRecentFeedSeen(now);
+          const seen = newestSeen(krData);
+          localStorage.setItem(RECENT_FEED_SEEN_KEY, seen);
+          setRecentFeedSeen(seen);
         }
 
         // 세션 시작 시 한 번만: 이미 추가해둔 컬럼에서 마지막으로 본 시각 이후 올라온 글을 NEW로 표시
@@ -281,7 +302,8 @@ export default function App() {
               }
             }
           }
-          updatedLastSeen[source] = new Date().toISOString();
+          // 벽시계 now 가 아니라 그 소스의 최신 글 시각으로 — 미래 날짜 글이 계속 NEW로 남지 않도록
+          updatedLastSeen[source] = newestSeen(data.filter((a) => a.source === source));
         }
         setNewArticleLinks(newLinks);
         setLastSeenBySource(updatedLastSeen);
@@ -291,14 +313,39 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 오래 열어둔 탭이 stale 해지지 않도록: 탭이 다시 보이거나 포커스될 때 5분 넘었으면 재요청 (기사 목록만 갱신)
+  useEffect(() => {
+    function refetch() {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastFetchRef.current < REFETCH_MIN_INTERVAL_MS) return;
+      lastFetchRef.current = Date.now();
+      fetch(API_URL)
+        .then((res) => res.json())
+        .then((data: Article[]) => setArticles(data))
+        .catch((err) => console.error("failed to refresh articles", err));
+    }
+    document.addEventListener("visibilitychange", refetch);
+    window.addEventListener("focus", refetch);
+    return () => {
+      document.removeEventListener("visibilitychange", refetch);
+      window.removeEventListener("focus", refetch);
+    };
+  }, []);
+
+  // 메인 보드 / 최신 글 모음 / NEW 버튼은 국내 소스만 다룸. 글로벌은 Global 뷰 전용.
+  const krArticles = useMemo(
+    () => articles.filter((a) => !GLOBAL_SOURCES.has(a.source)),
+    [articles]
+  );
+
   const columns = useMemo(() => {
     const bySource = new Map<string, Article[]>();
-    for (const a of articles) {
+    for (const a of krArticles) {
       if (!bySource.has(a.source)) bySource.set(a.source, []);
       bySource.get(a.source)!.push(a);
     }
     return [...bySource.entries()];
-  }, [articles]);
+  }, [krArticles]);
 
   const toggleSource = (source: string) => {
     const wasSelected = selectedSources.has(source);
@@ -389,25 +436,37 @@ export default function App() {
     (a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime()
   );
 
-  // 최근 7일 안에 올라온 글을 소스 상관없이 최신순으로 모아 상위 40개
+  // 최근 7일 안에 올라온 국내 글을 소스 상관없이 최신순으로 모아 상위 40개
   const recentList = useMemo(() => {
     const cutoff = Date.now() - RECENT_FEED_DAYS * 24 * 60 * 60 * 1000;
-    return articles
+    return krArticles
       .filter((a) => a.published_at != null && new Date(a.published_at).getTime() >= cutoff)
       .sort((a, b) => new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime())
       // ponytail: /api/articles가 소스당 최신 10개만 줌 — 한 소스가 7일 내 11편+ 올리면 잘림. 그때 worker LIMIT 상향.
       .slice(0, RECENT_FEED_LIMIT);
+  }, [krArticles]);
+
+  // 글로벌 소스 글을 최신순으로 상위 40개 (시간 창 없이 — 뷰가 항상 채워지도록)
+  // ponytail: /api/articles가 소스당 최신 10개만 줌 → 12개 소스면 최대 120개 중 40개. 발행량 많으면 사실상 최근 1~2주.
+  const globalList = useMemo(() => {
+    return articles
+      .filter((a) => GLOBAL_SOURCES.has(a.source) && a.published_at != null)
+      .sort((a, b) => new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime())
+      .slice(0, GLOBAL_FEED_LIMIT);
   }, [articles]);
 
-  // 마지막으로 최신 글 모음을 연 시각 이후에 올라온 글이 있으면 NEW 버튼이 튐
+  // 마지막으로 최신 글 모음을 연 시각 이후에 올라온 국내 글이 있으면 NEW 버튼이 튐
   const hasUnseenRecent = useMemo(() => {
     if (recentFeedSeen == null) return false;
-    return articles.some((a) => a.published_at != null && a.published_at > recentFeedSeen);
-  }, [articles, recentFeedSeen]);
+    return krArticles.some((a) => a.published_at != null && a.published_at > recentFeedSeen);
+  }, [krArticles, recentFeedSeen]);
 
   function toggleBookmarksOnly() {
     setShowBookmarksOnly((v) => {
-      if (!v) setShowRecentFeed(false);
+      if (!v) {
+        setShowRecentFeed(false);
+        setShowGlobalFeed(false);
+      }
       return !v;
     });
   }
@@ -417,15 +476,27 @@ export default function App() {
       const next = !v;
       if (next) {
         setShowBookmarksOnly(false);
-        const now = new Date().toISOString();
-        setRecentFeedSeen(now);
+        setShowGlobalFeed(false);
+        // 벽시계 now 가 아니라 지금까지 올라온 국내 글 중 최신 시각으로 — 미래 날짜 글이 있어도 bounce가 꺼짐
+        const seen = newestSeen(krArticles);
+        setRecentFeedSeen(seen);
         try {
-          localStorage.setItem(RECENT_FEED_SEEN_KEY, now);
+          localStorage.setItem(RECENT_FEED_SEEN_KEY, seen);
         } catch {
           // 저장 실패는 무시 — 다음 로드에서 다시 판별
         }
       }
       return next;
+    });
+  }
+
+  function toggleGlobalFeed() {
+    setShowGlobalFeed((v) => {
+      if (!v) {
+        setShowBookmarksOnly(false);
+        setShowRecentFeed(false);
+      }
+      return !v;
     });
   }
 
@@ -484,9 +555,16 @@ export default function App() {
         >
           NEW
         </button>
+        <button
+          className={`theme-toggle ${showGlobalFeed ? "theme-toggle-active" : ""}`}
+          onClick={toggleGlobalFeed}
+          aria-label={t("globalFeedAria")}
+        >
+          <Globe size={16} />
+        </button>
       </header>
 
-      {!showBookmarksOnly && !showRecentFeed && columns.length > 0 && (
+      {!showBookmarksOnly && !showRecentFeed && !showGlobalFeed && columns.length > 0 && (
         <div className="chips-wrap">
           <div className={`chips-collapse ${filtersCollapsed ? "" : "chips-collapse-expanded"}`}>
             <div className="chips">
@@ -514,7 +592,7 @@ export default function App() {
 
       {articles.length === 0 && <p className="empty-state">{t("loading")}</p>}
 
-      {!showBookmarksOnly && !showRecentFeed && showEmptyHero && (
+      {!showBookmarksOnly && !showRecentFeed && !showGlobalFeed && showEmptyHero && (
         <div className="empty-hero">
           <Suspense fallback={<div className="logo-intro-canvas" />}>
             <LogoIntroCanvas color={theme === "dark" ? "#ededed" : "#171717"} />
@@ -526,7 +604,19 @@ export default function App() {
         </div>
       )}
 
-      {showRecentFeed ? (
+      {showGlobalFeed ? (
+        <FlatFeed
+          title={t("globalFeed")}
+          emptyText={t("globalFeedEmpty")}
+          items={globalList}
+          readLinks={readLinks}
+          bookmarks={bookmarks}
+          locale={locale}
+          t={t}
+          onRead={markRead}
+          onToggleBookmark={toggleBookmark}
+        />
+      ) : showRecentFeed ? (
         <FlatFeed
           title={t("latestFeed")}
           emptyText={t("latestFeedEmpty")}

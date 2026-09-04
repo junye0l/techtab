@@ -35,6 +35,9 @@ const KO = {
   latestFeed: "최신 글 모음",
   latestFeedEmpty: "최근 7일간 올라온 글이 없어요.",
   latestFeedAria: "최신 글 모음 보기",
+  globalFeed: "글로벌",
+  globalFeedEmpty: "글로벌 글을 불러오는 중이에요.",
+  globalFeedAria: "글로벌 기술 블로그 보기",
 } as const;
 
 export type MessageKey = keyof typeof KO;
@@ -62,6 +65,9 @@ const MESSAGES: Record<Locale, Record<MessageKey, string>> = {
     latestFeed: "Latest",
     latestFeedEmpty: "No posts in the last 7 days.",
     latestFeedAria: "Show latest posts",
+    globalFeed: "Global",
+    globalFeedEmpty: "Loading global posts…",
+    globalFeedAria: "Show global engineering blogs",
   },
 };
 

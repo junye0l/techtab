@@ -33,6 +33,23 @@ const KEYWORDS = [
   "CI/CD",
   "온보딩",
   "채용",
+  // 글로벌 영문 제목용 (v0.4.0). 부분 문자열 오탐이 적은 term만 골라 추가
+  "gRPC",
+  "PostgreSQL",
+  "Postgres",
+  "WebAssembly",
+  "WASM",
+  "Terraform",
+  "Observability",
+  "Microservices",
+  "Latency",
+  "Inference",
+  "Embeddings",
+  "Fine-tuning",
+  "Postmortem",
+  "Incident",
+  "Rate limiting",
+  "Feature flag",
 ];
 
 export function extractKeyword(title: string): string | null {

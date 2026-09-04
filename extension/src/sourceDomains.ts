@@ -30,7 +30,37 @@ export const SOURCE_DOMAINS: Record<string, string> = {
   "데보션": "sk.com",
   "데브시스터즈": "devsisters.com",
   "요기요": "yogiyo.co.kr",
+  // 글로벌 (v0.4.0) — 파비콘은 브랜드 대표 도메인 기준
+  "Meta": "meta.com",
+  "Cloudflare": "cloudflare.com",
+  "Stripe": "stripe.com",
+  "GitHub": "github.com",
+  "Shopify": "shopify.com",
+  "Dropbox": "dropbox.com",
+  "Spotify": "spotify.com",
+  "Canva": "canva.com",
+  "Etsy": "etsy.com",
+  "Hugging Face": "huggingface.co",
+  "Netflix": "netflix.com",
+  "Airbnb": "airbnb.com",
 };
+
+// 글로벌 뷰에 들어갈 소스 (worker feeds.ts의 region: "global"과 동기화 유지).
+// 메인 보드·최신 글 모음·NEW 버튼은 이 셋을 제외한 국내 소스만 다룸.
+export const GLOBAL_SOURCES = new Set([
+  "Meta",
+  "Cloudflare",
+  "Stripe",
+  "GitHub",
+  "Shopify",
+  "Dropbox",
+  "Spotify",
+  "Canva",
+  "Etsy",
+  "Hugging Face",
+  "Netflix",
+  "Airbnb",
+]);
 
 export function faviconUrl(source: string): string {
   const localIcon = LOCAL_ICON_OVERRIDES[source];
