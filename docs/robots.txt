@@ -25,4 +25,4 @@ Allow: /
 User-agent: Yeti
 Allow: /
 
-Sitemap: https://junye0l.github.io/techtab/sitemap.xml
+Sitemap: https://techtab.kr/sitemap.xml

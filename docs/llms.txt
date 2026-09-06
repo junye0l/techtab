@@ -3,10 +3,10 @@
 > A Chrome extension that replaces the new-tab page with a feed of Korean big-tech and startup engineering blog posts, auto-collected hourly. Free, no sign-up, no personal data collected.
 
 ## Links
-- Landing page: https://junye0l.github.io/techtab/
+- Landing page: https://techtab.kr/
 - Install (Chrome Web Store): https://chromewebstore.google.com/detail/kobpfgadkgconpdpdppekbioiebnoggc
 - Source (GitHub): https://github.com/junye0l/techtab
-- Privacy policy: https://junye0l.github.io/techtab/privacy.html
+- Privacy policy: https://techtab.kr/privacy.html
 
 ## What it does
 - Aggregates ~21 Korean company engineering blog RSS feeds (NAVER, Kakao, Toss, Coupang, Daangn, Woowahan, and more) into one new-tab feed
