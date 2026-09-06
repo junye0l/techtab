@@ -1,6 +1,6 @@
 # Tech Tab
 
-**[소개 페이지 →](https://junye0l.github.io/techtab/)** · **[Landing page →](https://junye0l.github.io/techtab/)**
+**[소개 페이지 →](https://techtab.kr/)** · **[Landing page →](https://techtab.kr/)**
 
 국내 기술 블로그를 중심으로, 글로벌 빅테크 기술 블로그까지 새 탭에서 모아보는 크롬 확장 프로그램입니다.
 

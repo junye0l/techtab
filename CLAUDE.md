@@ -8,7 +8,7 @@ TechTab ("Tech Tab - 새 탭에서 만나는 국내 빅테크 개발 뉴스") is
 
 - `extension/` — the Chrome extension (React + TypeScript + Vite, MV3, `chrome_url_overrides.newtab`)
 - `worker/` — Cloudflare Worker + D1 backend that scrapes RSS feeds hourly and serves them as JSON
-- `docs/` — static promo landing page + privacy policy, served via GitHub Pages at `junye0l.github.io/techtab`
+- `docs/` — static promo landing page + privacy policy, served via GitHub Pages at `techtab.kr` (custom domain; `docs/CNAME`)
 
 ## Commands
 
