@@ -1,6 +1,4 @@
-# Tech Tab
-
-**[소개 페이지 →](https://techtab.kr/)** · **[Landing page →](https://techtab.kr/)**
+[**소개 페이지 →**](https://techtab.kr/) · [**Landing page →**](https://techtab.kr/)
 
 국내 기술 블로그를 중심으로, 글로벌 빅테크 기술 블로그까지 새 탭에서 모아보는 크롬 확장 프로그램입니다.
 
@@ -13,34 +11,25 @@
 ## 주요 기능 · Features
 
 - **국내 23개 + 글로벌 12개 기업 기술 블로그** RSS 자동 수집 (매시간 갱신)<br>
-  *RSS from 23 Korean + 12 global companies' engineering blogs, auto-collected and refreshed hourly*
-
+*RSS from 23 Korean + 12 global companies' engineering blogs, auto-collected and refreshed hourly*
 - 원하는 기업만 골라서 보드에 추가/제거, **드래그 앤 드롭**으로 순서 변경<br>
-  *Add or remove only the companies you want, and reorder columns by drag and drop*
-
+*Add or remove only the companies you want, and reorder columns by drag and drop*
 - **북마크**로 나중에 읽을 글 저장, **읽음 표시**로 이미 본 글 구분<br>
-  *Bookmark posts to read later; already-read posts are marked*
-
+*Bookmark posts to read later; already-read posts are marked*
 - 마지막으로 본 시점 이후 올라온 글에 **NEW 뱃지**<br>
-  *A NEW badge on posts published since your last visit*
-
+*A NEW badge on posts published since your last visit*
 - **`NEW` 버튼**으로 최근 7일간 국내 블로그의 새 글을 소스 구분 없이 한 화면에 모아보기<br>
-  *A `NEW` button gathers every post from the last 7 days across the Korean blogs into one view*
-
+*A `NEW` button gathers every post from the last 7 days across the Korean blogs into one view*
 - 상단의 **지구본 버튼**으로 글로벌 기업 블로그를 최신순으로 모아보기<br>
-  *A globe button gathers the global companies' blogs, newest first*
-
+*A globe button gathers the global companies' blogs, newest first*
 - 제목 키워드 자동 추출(AI, Kafka, LLM 등) 배지 표시<br>
-  *Auto-extracted keyword badges from titles (AI, Kafka, LLM, …)*
-
+*Auto-extracted keyword badges from titles (AI, Kafka, LLM, …)*
 - **영어 / 한국어 지원** — 국내 글은 영어로, 글로벌 글은 한국어로 제목 자동 번역<br>
-  *English and Korean — post titles are auto-translated (Korean posts into English, global posts into Korean)*
-
+*English and Korean — post titles are auto-translated (Korean posts into English, global posts into Korean)*
 - 다크/라이트 모드, Google 검색창 내장<br>
-  *Dark/light mode, with a built-in Google search box*
-
+*Dark/light mode, with a built-in Google search box*
 - 처음 열었을 때 3D로 조립되는 로고 인트로 (three.js)<br>
-  *A 3D logo intro that assembles itself on first open (three.js)*
+*A 3D logo intro that assembles itself on first open (three.js)*
 
 ## 기술 스택 · Tech stack
 
@@ -71,3 +60,4 @@
         ├── feeds.ts    # RSS 소스 목록 · RSS source list
         └── index.ts    # 수집 로직 + API · collection logic + API
 ```
+
