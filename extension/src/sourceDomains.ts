@@ -70,6 +70,11 @@ export function faviconUrl(source: string): string {
   return `https://www.google.com/s2/favicons?sz=32&domain=${domain ?? source}`;
 }
 
+// 사용자 바로가기용: s2보다 해상도(64px)·정확도가 높음 (mail.google.com → Gmail 아이콘, 투명 배경 유지가 더 잘 됨)
+export function siteIconUrl(host: string): string {
+  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=64&url=${encodeURIComponent(`https://${host}`)}`;
+}
+
 // source 문자열은 selectedSources/order/localStorage/favicon 키라 그대로 두고, 표시할 때만 영어 브랜드명으로 변환
 // (LINE·NHN 등 이미 라틴 문자인 소스는 매핑에 없으면 그대로 통과)
 const SOURCE_LABELS_EN: Record<string, string> = {

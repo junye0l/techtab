@@ -38,6 +38,12 @@ const KO = {
   globalFeed: "글로벌",
   globalFeedEmpty: "글로벌 글을 불러오는 중이에요.",
   globalFeedAria: "글로벌 기술 블로그 보기",
+  shortcuts: "바로가기",
+  shortcutAdd: "바로가기 추가",
+  shortcutRemove: "바로가기 삭제",
+  shortcutName: "이름",
+  cancel: "취소",
+  add: "추가",
 } as const;
 
 export type MessageKey = keyof typeof KO;
@@ -68,6 +74,12 @@ const MESSAGES: Record<Locale, Record<MessageKey, string>> = {
     globalFeed: "Global",
     globalFeedEmpty: "Loading global posts…",
     globalFeedAria: "Show global engineering blogs",
+    shortcuts: "Shortcuts",
+    shortcutAdd: "Add shortcut",
+    shortcutRemove: "Remove shortcut",
+    shortcutName: "Name",
+    cancel: "Cancel",
+    add: "Add",
   },
 };
 

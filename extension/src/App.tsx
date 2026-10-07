@@ -1,7 +1,7 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Bookmark, ChevronDown, Globe, GripVertical, Languages, Moon, Search, Sun } from "lucide-react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { Bookmark, ChevronDown, Globe, GripVertical, Languages, Moon, Plus, Search, Sun, X } from "lucide-react";
 import "./index.css";
-import { faviconUrl, GLOBAL_SOURCES, sourceLabel } from "./sourceDomains";
+import { faviconUrl, GLOBAL_SOURCES, siteIconUrl, sourceLabel } from "./sourceDomains";
 import { extractKeyword, keywordLabel } from "./keywords";
 import { useI18n, type Locale, type TFunc } from "./i18n";
 import GoogleIcon from "./GoogleIcon";
@@ -20,6 +20,8 @@ const RECENT_FEED_LIMIT = 40;
 const GLOBAL_FEED_LIMIT = 40;
 const REFETCH_MIN_INTERVAL_MS = 5 * 60 * 1000;
 const RECENT_FEED_SEEN_KEY = "techtab-recent-feed-seen";
+const SHORTCUTS_KEY = "techtab-shortcuts";
+const SHORTCUTS_MAX = 8;
 
 interface Article {
   title: string;
@@ -65,6 +67,145 @@ function runSearch(query: string) {
 // RSS 링크는 외부 소스에서 오므로, javascript: 등 위험한 스킴이 섞여 들어와도 클릭 시 실행되지 않도록 재검증
 function isSafeUrl(url: string): boolean {
   return /^https?:\/\//i.test(url);
+}
+
+// 사용자 입력 URL: 스킴이 없으면(github.com) https:// 를 붙이고, 최종적으로 http(s)가 아니면 거부
+function normalizeUrl(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  const withScheme = /^[a-z][a-z\d+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(withScheme);
+    return isSafeUrl(url.href) && url.hostname ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+interface Shortcut {
+  name: string;
+  url: string;
+}
+
+function getInitialShortcuts(): Shortcut[] {
+  try {
+    const raw = localStorage.getItem(SHORTCUTS_KEY);
+    const list: unknown = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(list)) return [];
+    // 저장값이 손상·조작돼도 렌더에서 new URL()이 터지지 않도록 다시 검증, url은 key로 쓰므로 중복 제거
+    const seen = new Set<string>();
+    return list.filter((s): s is Shortcut => {
+      if (typeof s?.name !== "string" || typeof s?.url !== "string" || normalizeUrl(s.url) !== s.url) return false;
+      if (seen.has(s.url)) return false;
+      seen.add(s.url);
+      return true;
+    });
+  } catch {
+    return [];
+  }
+}
+
+// 하단 플로팅 독: 사용자가 직접 추가하는 바로가기 (크롬 기본 새 탭의 바로가기 대체)
+function ShortcutDock({ t }: { t: TFunc }) {
+  const [shortcuts, setShortcuts] = useState<Shortcut[]>(getInitialShortcuts);
+  const [adding, setAdding] = useState(false);
+  const [removing, setRemoving] = useState<Set<string>>(new Set());
+  const [name, setName] = useState("");
+  const [url, setUrl] = useState("");
+  const normalized = normalizeUrl(url);
+
+  useEffect(() => {
+    localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts));
+  }, [shortcuts]);
+
+  function closeForm() {
+    setAdding(false);
+    setName("");
+    setUrl("");
+  }
+
+  function add(e: FormEvent) {
+    e.preventDefault();
+    if (!normalized) return;
+    setShortcuts((prev) =>
+      prev.some((s) => s.url === normalized)
+        ? prev
+        : [...prev, { name: name.trim() || new URL(normalized).hostname, url: normalized }]
+    );
+    closeForm();
+  }
+
+  // 컬럼 제거와 같은 방식: 퇴장 애니메이션(.shortcut-exiting, 250ms)이 끝난 뒤 실제로 목록에서 뺌
+  function remove(url: string) {
+    setRemoving((prev) => new Set(prev).add(url));
+    setTimeout(() => {
+      setShortcuts((prev) => prev.filter((s) => s.url !== url));
+      setRemoving((prev) => {
+        const next = new Set(prev);
+        next.delete(url);
+        return next;
+      });
+    }, 250);
+  }
+
+  // 독은 항상 SHORTCUTS_MAX칸 고정. 삭제 중인 타일이 접히는 동안 끝에서 빈 칸이 같이 자라서 독 너비가 유지됨
+  const emptySlots = SHORTCUTS_MAX - shortcuts.length;
+
+  return (
+    <nav className="shortcut-dock" aria-label={t("shortcuts")}>
+      {shortcuts.map((s) => (
+        <div key={s.url} className={`shortcut ${removing.has(s.url) ? "shortcut-exiting" : ""}`}>
+          <a href={isSafeUrl(s.url) ? s.url : undefined} className="shortcut-link" title={s.name} aria-label={s.name}>
+            <img src={siteIconUrl(new URL(s.url).hostname)} alt="" className="shortcut-icon" />
+          </a>
+          <button
+            className="shortcut-remove"
+            onClick={() => remove(s.url)}
+            aria-label={`${t("shortcutRemove")}: ${s.name}`}
+          >
+            <X size={10} />
+          </button>
+        </div>
+      ))}
+      {Array.from({ length: emptySlots + removing.size }, (_, i) => (
+        <button
+          key={`slot-${i}`}
+          className={`shortcut-slot ${i >= emptySlots ? "shortcut-slot-entering" : ""}`}
+          onClick={() => (adding ? closeForm() : setAdding(true))}
+          aria-label={t("shortcutAdd")}
+          aria-expanded={adding}
+        >
+          <Plus size={20} />
+        </button>
+      ))}
+      {adding && (
+        <form className="shortcut-form" onSubmit={add} onKeyDown={(e) => e.key === "Escape" && closeForm()}>
+          <div className="shortcut-form-title">
+            {t("shortcutAdd")}
+            <span className="shortcut-form-count">
+              {shortcuts.length} / {SHORTCUTS_MAX}
+            </span>
+          </div>
+          <label className="shortcut-field">
+            {t("shortcutName")}
+            <input value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+          </label>
+          <label className="shortcut-field">
+            URL
+            <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="github.com" className="shortcut-url" />
+          </label>
+          <div className="shortcut-form-actions">
+            <button type="button" className="shortcut-cancel" onClick={closeForm}>
+              {t("cancel")}
+            </button>
+            <button type="submit" className="shortcut-submit" disabled={!normalized}>
+              {t("add")}
+            </button>
+          </div>
+        </form>
+      )}
+    </nav>
+  );
 }
 
 function ArticleCard({
@@ -708,6 +849,7 @@ export default function App() {
           })}
         </div>
       )}
+      <ShortcutDock t={t} />
     </main>
   );
 }
