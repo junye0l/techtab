@@ -14,7 +14,7 @@
 </head>
 <body>
 <h1 data-i18n="title">Tech Tab 개인정보처리방침</h1>
-<p data-i18n="updated">최종 수정일: 2026-08-25</p>
+<p data-i18n="updated">최종 수정일: 2026-10-07</p>
 
 <p data-i18n="intro">Tech Tab(이하 "확장 프로그램")은 사용자의 개인정보를 수집하지 않습니다.</p>
 
@@ -22,13 +22,13 @@
 <p data-i18n="p_collect">없습니다. 회원가입, 로그인, 계정 연동 기능이 없으며, 이름·이메일·위치 등 어떠한 개인 식별 정보도 수집하지 않습니다.</p>
 
 <h2 data-i18n="h_local">로컬 저장 데이터</h2>
-<p data-i18n-html="p_local">다크모드 설정, 관심 기업 필터, 카드 순서, 읽음 표시, 북마크 등 사용자 설정은 브라우저의 <code>localStorage</code>에만 저장되며, 사용자의 기기를 벗어나지 않습니다. 서버로 전송되지 않습니다.</p>
+<p data-i18n-html="p_local">다크모드 설정, 관심 기업 필터, 카드 순서, 읽음 표시, 북마크, 바로가기 등 사용자 설정은 브라우저의 <code>localStorage</code>에만 저장되며, 사용자의 기기를 벗어나지 않습니다. 서버로 전송되지 않습니다.</p>
 
 <h2 data-i18n="h_network">네트워크 통신</h2>
-<p data-i18n="p_network">새 탭을 열면 확장 프로그램은 자체 백엔드(Cloudflare Workers)에 공개 기술 블로그 글 목록을 요청하는 GET 요청 한 건만 보냅니다. 이 요청에는 사용자를 식별할 수 있는 어떠한 정보도 포함되지 않으며, 별도의 분석(analytics)·추적(tracking) 스크립트를 사용하지 않습니다.</p>
+<p data-i18n="p_network">새 탭을 열면 확장 프로그램은 자체 백엔드(Cloudflare Workers)에 공개 기술 블로그 글 목록을 요청합니다. 이 요청에는 사용자를 식별할 수 있는 어떠한 정보도 포함되지 않습니다. 또한 기업 로고와 사용자가 추가한 바로가기 아이콘을 표시하기 위해, 브라우저가 Google 파비콘 서비스(www.google.com, t3.gstatic.com)에 해당 사이트의 도메인 주소로 아이콘 이미지를 요청합니다. 이때 바로가기로 추가한 사이트의 도메인이 Google에 전달되며, 이 요청에는 Google의 개인정보처리방침이 적용됩니다. 별도의 분석(analytics)·추적(tracking) 스크립트는 사용하지 않습니다.</p>
 
 <h2 data-i18n="h_third">제3자 제공</h2>
-<p data-i18n="p_third">수집하는 개인정보가 없으므로 제3자에게 제공하는 정보도 없습니다.</p>
+<p data-i18n="p_third">수집하는 개인정보가 없으므로 제3자에게 제공하는 정보도 없습니다. 단, 위 "네트워크 통신"의 아이콘 요청은 사용자의 브라우저에서 Google로 직접 전송됩니다.</p>
 
 <h2 data-i18n="h_contact">문의</h2>
 <p data-i18n-html="p_contact">문의사항은 <a href="https://github.com/junye0l/techtab">GitHub 저장소</a>의 Issue로 남겨주세요.</p>
@@ -38,7 +38,7 @@
 (function () {
   var T = {
     title: { ko: 'Tech Tab 개인정보처리방침', en: 'Tech Tab Privacy Policy' },
-    updated: { ko: '최종 수정일: 2026-08-25', en: 'Last updated: 2026-08-25' },
+    updated: { ko: '최종 수정일: 2026-10-07', en: 'Last updated: 2026-10-07' },
     intro: {
       ko: 'Tech Tab(이하 "확장 프로그램")은 사용자의 개인정보를 수집하지 않습니다.',
       en: 'Tech Tab (the "extension") does not collect any personal information.'
@@ -50,18 +50,18 @@
     },
     h_local: { ko: '로컬 저장 데이터', en: 'Locally stored data' },
     p_local: {
-      ko: '다크모드 설정, 관심 기업 필터, 카드 순서, 읽음 표시, 북마크 등 사용자 설정은 브라우저의 <code>localStorage</code>에만 저장되며, 사용자의 기기를 벗어나지 않습니다. 서버로 전송되지 않습니다.',
-      en: 'Your settings — dark mode, company filters, column order, read state, bookmarks — are stored only in the browser’s <code>localStorage</code>. They never leave your device and are not sent to any server.'
+      ko: '다크모드 설정, 관심 기업 필터, 카드 순서, 읽음 표시, 북마크, 바로가기 등 사용자 설정은 브라우저의 <code>localStorage</code>에만 저장되며, 사용자의 기기를 벗어나지 않습니다. 서버로 전송되지 않습니다.',
+      en: 'Your settings — dark mode, company filters, column order, read state, bookmarks, shortcuts — are stored only in the browser’s <code>localStorage</code>. They never leave your device and are not sent to any server.'
     },
     h_network: { ko: '네트워크 통신', en: 'Network communication' },
     p_network: {
-      ko: '새 탭을 열면 확장 프로그램은 자체 백엔드(Cloudflare Workers)에 공개 기술 블로그 글 목록을 요청하는 GET 요청 한 건만 보냅니다. 이 요청에는 사용자를 식별할 수 있는 어떠한 정보도 포함되지 않으며, 별도의 분석(analytics)·추적(tracking) 스크립트를 사용하지 않습니다.',
-      en: 'When you open a new tab, the extension makes a single GET request to its own backend (Cloudflare Workers) for the public list of blog posts. That request contains no information that could identify you, and the extension uses no analytics or tracking scripts.'
+      ko: '새 탭을 열면 확장 프로그램은 자체 백엔드(Cloudflare Workers)에 공개 기술 블로그 글 목록을 요청합니다. 이 요청에는 사용자를 식별할 수 있는 어떠한 정보도 포함되지 않습니다. 또한 기업 로고와 사용자가 추가한 바로가기 아이콘을 표시하기 위해, 브라우저가 Google 파비콘 서비스(www.google.com, t3.gstatic.com)에 해당 사이트의 도메인 주소로 아이콘 이미지를 요청합니다. 이때 바로가기로 추가한 사이트의 도메인이 Google에 전달되며, 이 요청에는 Google의 개인정보처리방침이 적용됩니다. 별도의 분석(analytics)·추적(tracking) 스크립트는 사용하지 않습니다.',
+      en: 'When you open a new tab, the extension requests the public list of blog posts from its own backend (Cloudflare Workers). That request contains no information that could identify you. To show company logos and the icons of shortcuts you add, your browser also requests icon images from Google’s favicon service (www.google.com, t3.gstatic.com) by site domain — so the domains of the sites you add as shortcuts are sent to Google, and Google’s privacy policy applies to those requests. The extension uses no analytics or tracking scripts.'
     },
     h_third: { ko: '제3자 제공', en: 'Sharing with third parties' },
     p_third: {
-      ko: '수집하는 개인정보가 없으므로 제3자에게 제공하는 정보도 없습니다.',
-      en: 'Since no personal information is collected, none is shared with third parties.'
+      ko: '수집하는 개인정보가 없으므로 제3자에게 제공하는 정보도 없습니다. 단, 위 "네트워크 통신"의 아이콘 요청은 사용자의 브라우저에서 Google로 직접 전송됩니다.',
+      en: 'Since no personal information is collected, none is shared with third parties. The icon requests described under “Network communication” go directly from your browser to Google.'
     },
     h_contact: { ko: '문의', en: 'Contact' },
     p_contact: {

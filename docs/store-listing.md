@@ -28,6 +28,8 @@
 
 영어/한국어 UI, 글 제목 자동 번역 (국내 글은 영어로, 글로벌 글은 한국어로)
 
+자주 가는 사이트를 하단 독에 최대 8개까지 바로가기로 추가 (크롬 기본 새 탭의 바로가기 대체)
+
 다크/라이트 모드, Google 검색창 내장
 
 
@@ -60,6 +62,8 @@ It auto-collects the RSS feeds of 23 Korean companies — NAVER, Kakao, Toss, Wo
 - Auto-extracted keyword badges from titles (AI, Kafka, LLM, and more)
 
 - English and Korean UI, with article titles auto-translated — Korean posts into English, global posts into Korean
+
+- Pin up to 8 favorite sites to a shortcut dock at the bottom — replacing Chrome's default new-tab shortcuts
 
 - Dark/light mode with a built-in Google search box
 
