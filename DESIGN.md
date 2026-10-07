@@ -446,6 +446,8 @@ The brand's signature decoration is a three-pair gradient stack:
 
 The three pairs collapse into a single multi-color mesh gradient when used as the hero atmospheric backdrop. Treat the gradient as one unified object — do not crop down to a single colour, do not reorder the stops, and do not miniaturise. Used at hero scale only.
 
+**TechTab deviation (2026-10-07):** the `techtab.kr` landing hero no longer uses the blurred mesh. It — and the closing "Tech Tab" CTA, as a bookend — uses `.sparks` — small pixel "+" stars that twinkle (`steps(4)`) in the five-dot palette from the store hero images (`#51c15c` `#eebc45` `#467ef3` `#e2811e` `#a051ff`), kept to the outer bands so the wordmark and copy stay clear. It pairs with the Press Start 2P wordmark. Use that palette, not the mesh, for any new TechTab hero decoration.
+
 ## Typography
 
 ### Font Family

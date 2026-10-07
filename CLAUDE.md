@@ -56,7 +56,7 @@ There is no release-branch gate — commits go straight to `main`; the Chrome We
 
 ## Design system
 
-`DESIGN.md` documents a Vercel-inspired token system (near-white canvas, ink-black primary, a signature multi-stop mesh gradient as the only decorative color, Geist/Geist Mono type — falls back to Inter/JetBrains Mono since Geist isn't self-hostable here) used consistently across the extension UI and the `docs/` landing page. Match it rather than inventing new tokens.
+`DESIGN.md` documents a Vercel-inspired token system (near-white canvas, ink-black primary, a signature multi-stop mesh gradient as the only decorative color, Geist/Geist Mono type — falls back to Inter/JetBrains Mono since Geist isn't self-hostable here) used consistently across the extension UI and the `docs/` landing page. Match it rather than inventing new tokens. Exception: the `docs/` landing hero (and the closing CTA, as a bookend) swapped the mesh for twinkling pixel "+" sparkles in the store images' five-dot palette (see the deviation note in `DESIGN.md`).
 
 ## Before finishing any change
 
