@@ -9,11 +9,12 @@
 - Privacy policy: https://techtab.kr/privacy.html
 
 ## What it does
-- Aggregates ~21 Korean company engineering blog RSS feeds (NAVER, Kakao, Toss, Coupang, Daangn, Woowahan, and more) into one new-tab feed
+- Aggregates 23 Korean company engineering blog RSS feeds (NAVER, Kakao, Toss, Daangn, Woowahan, and more) into one new-tab feed, plus a separate view of 12 global engineering blogs (Netflix, Stripe, Cloudflare, GitHub, Meta, and more)
 - Pick which companies to follow, reorder columns by drag and drop, bookmark posts, mark as read, NEW badges for posts since last visit
-- Korean and English UI; Korean post titles are machine-translated to English (DeepL)
+- Korean and English UI; post titles are machine-translated (DeepL) — Korean posts into English, global posts into Korean
+- A shortcut dock at the bottom for up to 8 user-chosen sites, replacing Chrome's default new-tab shortcuts
 - Dark/light mode, built-in Google search box
 
 ## Notes
 - Tech Tab is an aggregator UI, not an original data source. It links to each publisher's post and does not host or republish article content.
-- No account, login, or tracking. All user settings live in the browser's localStorage and never leave the device.
+- No account, login, or tracking. All user settings live in the browser's localStorage. To show icons, the browser requests favicons from Google's favicon service by site domain, so the domains of user-added shortcuts are sent to Google.

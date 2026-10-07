@@ -26,6 +26,8 @@
 *Auto-extracted keyword badges from titles (AI, Kafka, LLM, …)*
 - **영어 / 한국어 지원** — 국내 글은 영어로, 글로벌 글은 한국어로 제목 자동 번역<br>
 *English and Korean — post titles are auto-translated (Korean posts into English, global posts into Korean)*
+- 자주 가는 사이트를 하단 **바로가기 독**에 최대 8개까지 고정 (크롬 기본 새 탭의 바로가기 대체)<br>
+*Pin up to 8 favorite sites to a **shortcut dock** at the bottom — replacing Chrome's default new-tab shortcuts*
 - 다크/라이트 모드, Google 검색창 내장<br>
 *Dark/light mode, with a built-in Google search box*
 - 처음 열었을 때 3D로 조립되는 로고 인트로 (three.js)<br>
