@@ -68,8 +68,8 @@ body {
   flex-direction: column;
   min-height: 100%;
   margin: 0 auto;
-  /* 하단 바로가기 독(높이 ~74 + bottom 24)에 마지막 카드가 가려지지 않도록 여유 */
-  padding: var(--space-xl) var(--space-md) 128px;
+  /* 하단 바로가기 독(높이 = 타일 + 22, bottom 24)에 마지막 카드가 가려지지 않도록 여유. 기본 타일 52px → 128px */
+  padding: var(--space-xl) var(--space-md) calc(var(--dock-tile, 52px) + 76px);
 }
 
 .page--hero {
@@ -659,6 +659,7 @@ body {
   border-radius: var(--radius-full);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   transform: translateX(-50%);
+  user-select: none;
   animation: dock-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
 }
 
@@ -692,6 +693,25 @@ body {
   display: flex;
   /* 퇴장 시 폭이 줄어드는 동안 타일이 양옆으로 균등하게 넘치도록(한쪽으로 쏠리지 않게) */
   justify-content: center;
+  /* 드롭 시 손가락 위치(dx)에서 제 칸으로 스냅 */
+  transition: transform 0.2s ease;
+}
+
+/* 꾹 눌러 집어 든 타일: 살짝 커지고 그림자가 깊어짐, 다른 타일 위로 */
+.shortcut-dragging {
+  z-index: 1;
+  transition: none;
+  cursor: grabbing;
+}
+
+.shortcut-dragging .shortcut-link,
+.shortcut-dragging .shortcut-link:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.shortcut-dragging .shortcut-remove {
+  display: none;
 }
 
 .shortcut-exiting {
@@ -702,7 +722,7 @@ body {
 /* 폭과 gap(10px)을 함께 접어서 옆 아이콘이 부드럽게 당겨 오도록 */
 @keyframes shortcut-collapse {
   from {
-    width: 52px;
+    width: var(--dock-tile, 52px);
     margin-right: 0;
   }
   to {
@@ -733,9 +753,10 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: var(--dock-tile, 52px);
+  height: var(--dock-tile, 52px);
+  /* 52px 기준 반경 14px, 아이콘 30px 비율을 크기 조절 시에도 유지 */
+  border-radius: calc(var(--dock-tile, 52px) * 0.27);
   background: #ffffff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
   transition: transform 0.15s ease;
@@ -746,8 +767,8 @@ body {
 }
 
 .shortcut-icon {
-  width: 30px;
-  height: 30px;
+  width: calc(var(--dock-tile, 52px) * 0.58);
+  height: calc(var(--dock-tile, 52px) * 0.58);
 }
 
 .shortcut-remove {
@@ -776,9 +797,33 @@ body {
   inset: -4px;
 }
 
+/* :focus-within 대신 :focus-visible — 꾹 눌러 끌면 링크에 마우스 포커스가 남아 X가 계속 떠 있던 문제.
+   키보드 포커스일 때만 유지. 드래그 중엔 밑으로 지나가는 타일들의 호버도 무시 */
 .shortcut:hover .shortcut-remove,
-.shortcut:focus-within .shortcut-remove {
+.shortcut:has(:focus-visible) .shortcut-remove {
   opacity: 1;
+}
+
+.shortcut-dock:has(.shortcut-dragging) .shortcut-remove {
+  opacity: 0;
+}
+
+/* 크기 조절 손잡이: 독 양 끝 둥근 부분(패딩 14px)에 겹쳐 둠 */
+.dock-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.dock-resize-left {
+  left: -2px;
+}
+
+.dock-resize-right {
+  right: -2px;
 }
 
 /* 빈 칸: 옅은 스쿼클, + 는 호버/포커스 때만 */
@@ -787,14 +832,14 @@ body {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: var(--dock-tile, 52px);
+  height: var(--dock-tile, 52px);
   padding: 0;
   overflow: hidden;
   color: var(--color-ink);
   background: rgba(0, 0, 0, 0.04);
   border: none;
-  border-radius: 14px;
+  border-radius: calc(var(--dock-tile, 52px) * 0.27);
   /* 뒤 카드 글자가 비쳐도 칸 윤곽이 읽히도록 */
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
   cursor: pointer;
@@ -827,7 +872,7 @@ body {
     margin-left: -10px;
   }
   to {
-    width: 52px;
+    width: var(--dock-tile, 52px);
     margin-left: 0;
   }
 }

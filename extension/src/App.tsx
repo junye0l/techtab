@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Bookmark, ChevronDown, Globe, GripVertical, Languages, Moon, Plus, Search, Sun, X } from "lucide-react";
 import "./index.css";
 import { faviconUrl, GLOBAL_SOURCES, siteIconUrl, sourceLabel } from "./sourceDomains";
@@ -22,6 +22,14 @@ const REFETCH_MIN_INTERVAL_MS = 5 * 60 * 1000;
 const RECENT_FEED_SEEN_KEY = "techtab-recent-feed-seen";
 const SHORTCUTS_KEY = "techtab-shortcuts";
 const SHORTCUTS_MAX = 8;
+const DOCK_SIZE_KEY = "techtab-dock-size";
+const DOCK_SIZE_MIN = 40;
+const DOCK_SIZE_MAX = 72;
+const DOCK_SIZE_DEFAULT = 52;
+
+function clampDockSize(n: number) {
+  return Math.round(Math.max(DOCK_SIZE_MIN, Math.min(DOCK_SIZE_MAX, n)));
+}
 
 interface Article {
   title: string;
@@ -112,6 +120,40 @@ function ShortcutDock({ t }: { t: TFunc }) {
   const [removing, setRemoving] = useState<Set<string>>(new Set());
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
+  const [drag, setDrag] = useState<{ url: string; dx: number } | null>(null);
+  const listRef = useRef(shortcuts);
+  listRef.current = shortcuts;
+  const suppressClick = useRef(false);
+  const setFlipRef = useFlip(shortcuts.map((s) => s.url));
+  const [tileSize, setTileSize] = useState(() => {
+    const saved = Number(localStorage.getItem(DOCK_SIZE_KEY));
+    return saved ? clampDockSize(saved) : DOCK_SIZE_DEFAULT;
+  });
+
+  // 타일 크기는 루트 CSS 변수로: 독 안의 크기들과 .page 하단 여백이 같이 따라감 (페인트 전에 적용해 깜빡임 없음)
+  useLayoutEffect(() => {
+    document.documentElement.style.setProperty("--dock-tile", `${tileSize}px`);
+    localStorage.setItem(DOCK_SIZE_KEY, String(tileSize));
+  }, [tileSize]);
+
+  // macOS 독처럼 양 끝을 잡고 바깥으로 끌면 커지고 안쪽으로 끌면 작아짐.
+  // 독이 가운데 정렬이라 한쪽을 dx 끌면 폭은 2dx 변함 → 타일 8개(gap 고정)에 나눠 dt = 2dx / 8
+  function startResize(e: React.PointerEvent<HTMLSpanElement>, side: -1 | 1) {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const x0 = e.clientX;
+    const size0 = tileSize;
+    const el = e.currentTarget;
+    const move = (ev: PointerEvent) => setTileSize(clampDockSize(size0 + ((ev.clientX - x0) * side * 2) / SHORTCUTS_MAX));
+    const end = () => {
+      el.removeEventListener("pointermove", move);
+      el.removeEventListener("pointerup", end);
+      el.removeEventListener("pointercancel", end);
+    };
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+  }
   const normalized = normalizeUrl(url);
 
   useEffect(() => {
@@ -148,15 +190,75 @@ function ShortcutDock({ t }: { t: TFunc }) {
     }, 250);
   }
 
+  // 꾹 눌러(250ms) 드래그로 순서 변경. 포인터가 한 칸(pitch)을 넘을 때마다 목록을 바로 재정렬하고,
+  // 끌리는 타일은 원래 칸 기준 dx만큼 따라오며 나머지 타일은 useFlip으로 미끄러짐
+  function startPress(e: React.PointerEvent<HTMLDivElement>, url: string) {
+    if (e.button !== 0 || removing.size || (e.target as HTMLElement).closest(".shortcut-remove")) return;
+    const pitch = e.currentTarget.offsetWidth + parseFloat(getComputedStyle(e.currentTarget.parentElement!).columnGap);
+    let x0 = e.clientX;
+    const y0 = e.clientY;
+    let dragging = false;
+    const timer = setTimeout(() => {
+      dragging = true;
+      setDrag({ url, dx: 0 });
+    }, 250);
+    const move = (ev: PointerEvent) => {
+      if (!dragging) {
+        if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 6) end();
+        return;
+      }
+      const list = listRef.current;
+      const from = list.findIndex((s) => s.url === url);
+      const to = Math.max(0, Math.min(list.length - 1, from + Math.round((ev.clientX - x0) / pitch)));
+      if (to !== from) {
+        const next = list.filter((s) => s.url !== url);
+        next.splice(to, 0, list[from]);
+        listRef.current = next;
+        setShortcuts(next);
+        x0 += (to - from) * pitch;
+      }
+      setDrag({ url, dx: ev.clientX - x0 });
+    };
+    const end = () => {
+      clearTimeout(timer);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+      if (!dragging) return;
+      setDrag(null);
+      // 드롭 직후 링크에 떨어지는 click(=페이지 이동)을 한 번 무시
+      suppressClick.current = true;
+      setTimeout(() => (suppressClick.current = false));
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+  }
+
   // 독은 항상 SHORTCUTS_MAX칸 고정. 삭제 중인 타일이 접히는 동안 끝에서 빈 칸이 같이 자라서 독 너비가 유지됨
   const emptySlots = SHORTCUTS_MAX - shortcuts.length;
 
   return (
     <nav className="shortcut-dock" aria-label={t("shortcuts")}>
+      <span className="dock-resize dock-resize-left" aria-hidden onPointerDown={(e) => startResize(e, -1)} />
+      <span className="dock-resize dock-resize-right" aria-hidden onPointerDown={(e) => startResize(e, 1)} />
       {shortcuts.map((s) => (
-        <div key={s.url} className={`shortcut ${removing.has(s.url) ? "shortcut-exiting" : ""}`}>
-          <a href={isSafeUrl(s.url) ? s.url : undefined} className="shortcut-link" title={s.name} aria-label={s.name}>
-            <img src={siteIconUrl(new URL(s.url).hostname)} alt="" className="shortcut-icon" />
+        <div
+          key={s.url}
+          ref={drag?.url === s.url ? undefined : setFlipRef(s.url)}
+          className={`shortcut ${removing.has(s.url) ? "shortcut-exiting" : ""} ${drag?.url === s.url ? "shortcut-dragging" : ""}`}
+          style={drag?.url === s.url ? { transform: `translateX(${drag.dx}px)` } : undefined}
+          onPointerDown={(e) => startPress(e, s.url)}
+        >
+          <a
+            href={isSafeUrl(s.url) ? s.url : undefined}
+            className="shortcut-link"
+            title={s.name}
+            aria-label={s.name}
+            draggable={false}
+            onClick={(e) => suppressClick.current && e.preventDefault()}
+          >
+            <img src={siteIconUrl(new URL(s.url).hostname)} alt="" className="shortcut-icon" draggable={false} />
           </a>
           <button
             className="shortcut-remove"

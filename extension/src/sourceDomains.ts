@@ -70,9 +70,18 @@ export function faviconUrl(source: string): string {
   return `https://www.google.com/s2/favicons?sz=32&domain=${domain ?? source}`;
 }
 
-// 사용자 바로가기용: s2보다 해상도(64px)·정확도가 높음 (mail.google.com → Gmail 아이콘, 투명 배경 유지가 더 잘 됨)
+// faviconV2가 저해상도(32px)만 주는 사이트 중 바로가기로 흔한 곳은 번들 아이콘으로 대체
+// ponytail: 호스트 하드코딩 — 다른 사이트도 흐리다는 제보가 쌓이면 여기에 추가
+const SITE_ICON_OVERRIDES: Record<string, string> = {
+  "github.com": "icons/sites/github.svg",
+};
+
+// 사용자 바로가기용: s2보다 해상도·정확도가 높음 (mail.google.com → Gmail 아이콘, 투명 배경 유지가 더 잘 됨)
+// 30px 아이콘을 레티나에서 축소 렌더링해 선명하도록 128px 요청 (사이트에 큰 아이콘이 없으면 있는 만큼만 옴)
 export function siteIconUrl(host: string): string {
-  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=64&url=${encodeURIComponent(`https://${host}`)}`;
+  const localIcon = SITE_ICON_OVERRIDES[host.replace(/^www\./, "")];
+  if (localIcon) return `/${localIcon}`;
+  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=128&url=${encodeURIComponent(`https://${host}`)}`;
 }
 
 // source 문자열은 selectedSources/order/localStorage/favicon 키라 그대로 두고, 표시할 때만 영어 브랜드명으로 변환

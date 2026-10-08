@@ -5,8 +5,14 @@ import { useLayoutEffect, useRef } from "react";
 export function useFlip(keys: string[]) {
   const nodes = useRef(new Map<string, HTMLElement>());
   const prevRects = useRef(new Map<string, DOMRect>());
+  const prevKeys = useRef("");
 
+  // 매 커밋마다 위치를 기록해 둠 — 키가 바뀔 때만 기록하면 그 사이 레이아웃 변화(독 등장 애니메이션 등)로
+  // 이전 위치가 낡아서 엉뚱한 곳에서 날아옴. 애니메이션은 키(순서/구성)가 바뀐 커밋에서만
   useLayoutEffect(() => {
+    const joined = keys.join(",");
+    const changed = joined !== prevKeys.current;
+    prevKeys.current = joined;
     const newRects = new Map<string, DOMRect>();
 
     nodes.current.forEach((el, key) => {
@@ -14,7 +20,7 @@ export function useFlip(keys: string[]) {
       newRects.set(key, rect);
 
       const prev = prevRects.current.get(key);
-      if (!prev) return;
+      if (!changed || !prev) return;
 
       const dx = prev.left - rect.left;
       const dy = prev.top - rect.top;
@@ -30,7 +36,7 @@ export function useFlip(keys: string[]) {
     });
 
     prevRects.current = newRects;
-  }, [keys.join(",")]);
+  });
 
   return (key: string) => (el: HTMLElement | null) => {
     if (el) nodes.current.set(key, el);
