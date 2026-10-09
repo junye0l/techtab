@@ -10,19 +10,23 @@
   h2 { font-size: 1.1rem; margin-top: 2em; }
   code { background: #f0f0f0; padding: 2px 5px; border-radius: 3px; }
   /* 랜딩(index.html)과 같은 KO | EN 세그먼트 스위치 — 이 페이지는 라이트 전용이라 색은 고정값 */
-  .lang-switch { position: fixed; top: 16px; right: 16px; z-index: 100; display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 9999px; background: rgba(255,255,255,0.72); -webkit-backdrop-filter: blur(12px) saturate(160%); backdrop-filter: blur(12px) saturate(160%); box-shadow: 0 0 0 1px #ebebeb, 0 4px 14px rgba(0,0,0,0.06); }
+  body:lang(ja) { word-break: auto-phrase; }
+  .lang-switch { position: fixed; top: 16px; right: 16px; z-index: 100; display: grid; grid-template-columns: repeat(4, 1fr); padding: 3px; border-radius: 9999px; background: rgba(255,255,255,0.72); -webkit-backdrop-filter: blur(12px) saturate(160%); backdrop-filter: blur(12px) saturate(160%); box-shadow: 0 0 0 1px #ebebeb, 0 4px 14px rgba(0,0,0,0.06); }
   .lang-switch button { position: relative; z-index: 1; width: 38px; height: 26px; padding: 0; border: none; border-radius: 9999px; background: none; color: #888; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; cursor: pointer; transition: color 0.2s ease; }
   .lang-switch button:hover { color: #171717; }
   .lang-switch button[aria-pressed="true"] { color: #fff; }
   .lang-switch button:focus-visible { outline: 2px solid #0070f3; outline-offset: 2px; }
   .lang-thumb { position: absolute; top: 3px; left: 3px; width: 38px; height: 26px; border-radius: 9999px; background: #171717; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
   .lang-switch[data-cur="en"] .lang-thumb { transform: translateX(38px); }
+  .lang-switch[data-cur="ja"] .lang-thumb { transform: translateX(76px); }
+  .lang-switch[data-cur="zh"] .lang-thumb { transform: translateX(114px); }
   @media (prefers-reduced-motion: reduce) { .lang-thumb, .lang-switch button { transition: none; } }
 </style>
 </head>
 <body>
 <h1 data-i18n="title">Tech Tab 개인정보처리방침</h1>
-<p data-i18n="updated">최종 수정일: 2026-10-07</p>
+<p data-i18n="updated">최종 수정일: 2026-10-09</p>
+<p data-i18n="note">이 방침은 한국어·영어·일본어·중국어(번체)로 제공되며, 번역본과 한국어본의 내용이 다를 경우 한국어본이 우선합니다.</p>
 
 <p data-i18n="intro">Tech Tab(이하 "확장 프로그램")은 사용자의 개인정보를 수집하지 않습니다.</p>
 
@@ -45,48 +49,72 @@
   <span class="lang-thumb" aria-hidden="true"></span>
   <button type="button" data-lang="ko" aria-label="한국어">KO</button>
   <button type="button" data-lang="en" aria-label="English">EN</button>
+  <button type="button" data-lang="ja" aria-label="日本語">JA</button>
+  <button type="button" data-lang="zh" aria-label="繁體中文" lang="zh-Hant">中文</button>
 </div>
 <script>
 (function () {
   var T = {
-    title: { ko: 'Tech Tab 개인정보처리방침', en: 'Tech Tab Privacy Policy' },
-    updated: { ko: '최종 수정일: 2026-10-07', en: 'Last updated: 2026-10-07' },
+    title: { ko: 'Tech Tab 개인정보처리방침', en: 'Tech Tab Privacy Policy', ja: 'Tech Tab プライバシーポリシー', zh: 'Tech Tab 隱私權政策' },
+    updated: { ko: '최종 수정일: 2026-10-07', en: 'Last updated: 2026-10-07', ja: '最終更新日: 2026-10-09', zh: '最後更新日期：2026-10-09' },
+    note: {
+      ko: '이 방침은 한국어·영어·일본어·중국어(번체)로 제공되며, 번역본과 한국어본의 내용이 다를 경우 한국어본이 우선합니다.',
+      en: 'This policy is available in Korean, English, Japanese, and Traditional Chinese. If a translation differs from the Korean version, the Korean version prevails.',
+      ja: '本ポリシーは韓国語・英語・日本語・中国語（繁体字）で提供しています。翻訳版と韓国語版の内容が異なる場合は、韓国語版が優先されます。',
+      zh: '本政策提供韓文、英文、日文及繁體中文版本。若翻譯版本與韓文版本內容不一致，以韓文版本為準。'
+    },
     intro: {
       ko: 'Tech Tab(이하 "확장 프로그램")은 사용자의 개인정보를 수집하지 않습니다.',
-      en: 'Tech Tab (the "extension") does not collect any personal information.'
+      en: 'Tech Tab (the "extension") does not collect any personal information.',
+      ja: 'Tech Tab（以下「本拡張機能」）は、ユーザーの個人情報を収集しません。',
+      zh: 'Tech Tab（以下簡稱「本擴充功能」）不會收集使用者的個人資料。'
     },
-    h_collect: { ko: '수집하는 정보', en: 'Information we collect' },
+    h_collect: { ko: '수집하는 정보', en: 'Information we collect', ja: '収集する情報', zh: '我們收集的資訊' },
     p_collect: {
       ko: '없습니다. 회원가입, 로그인, 계정 연동 기능이 없으며, 이름·이메일·위치 등 어떠한 개인 식별 정보도 수집하지 않습니다.',
-      en: 'None. There is no sign-up, login, or account linking, and we do not collect any personally identifiable information such as name, email, or location.'
+      en: 'None. There is no sign-up, login, or account linking, and we do not collect any personally identifiable information such as name, email, or location.',
+      ja: 'ありません。会員登録、ログイン、アカウント連携の機能はなく、氏名・メールアドレス・位置情報など、個人を特定できる情報は一切収集しません。',
+      zh: '無。本擴充功能沒有註冊、登入或帳號連結功能，也不會收集姓名、電子郵件、位置等任何可識別個人身分的資訊。'
     },
-    h_local: { ko: '로컬 저장 데이터', en: 'Locally stored data' },
+    h_local: { ko: '로컬 저장 데이터', en: 'Locally stored data', ja: 'ローカルに保存されるデータ', zh: '儲存在本機的資料' },
     p_local: {
       ko: '다크모드 설정, 관심 기업 필터, 카드 순서, 읽음 표시, 북마크, 바로가기 등 사용자 설정은 브라우저의 <code>localStorage</code>에만 저장되며, 사용자의 기기를 벗어나지 않습니다. 서버로 전송되지 않습니다.',
-      en: 'Your settings — dark mode, company filters, column order, read state, bookmarks, shortcuts — are stored only in the browser’s <code>localStorage</code>. They never leave your device and are not sent to any server.'
+      en: 'Your settings — dark mode, company filters, column order, read state, bookmarks, shortcuts — are stored only in the browser’s <code>localStorage</code>. They never leave your device and are not sent to any server.',
+      ja: 'ダークモードの設定、企業フィルター、カードの並び順、既読表示、ブックマーク、ショートカットなどの設定は、ブラウザの <code>localStorage</code> にのみ保存され、お使いの端末の外に出ることはありません。サーバーに送信されることもありません。',
+      zh: '深色模式設定、公司篩選、卡片順序、已讀標示、書籤、捷徑等使用者設定，只會儲存在瀏覽器的 <code>localStorage</code> 中，不會離開你的裝置，也不會傳送到任何伺服器。'
     },
-    h_network: { ko: '네트워크 통신', en: 'Network communication' },
+    h_network: { ko: '네트워크 통신', en: 'Network communication', ja: '通信について', zh: '網路通訊' },
     p_network: {
       ko: '새 탭을 열면 확장 프로그램은 자체 백엔드(Cloudflare Workers)에 공개 기술 블로그 글 목록을 요청합니다. 이 요청에는 사용자를 식별할 수 있는 어떠한 정보도 포함되지 않습니다. 또한 기업 로고와 사용자가 추가한 바로가기 아이콘을 표시하기 위해, 브라우저가 Google 파비콘 서비스(www.google.com, t3.gstatic.com)에 해당 사이트의 도메인 주소로 아이콘 이미지를 요청합니다. 이때 바로가기로 추가한 사이트의 도메인이 Google에 전달되며, 이 요청에는 Google의 개인정보처리방침이 적용됩니다. 별도의 분석(analytics)·추적(tracking) 스크립트는 사용하지 않습니다.',
-      en: 'When you open a new tab, the extension requests the public list of blog posts from its own backend (Cloudflare Workers). That request contains no information that could identify you. To show company logos and the icons of shortcuts you add, your browser also requests icon images from Google’s favicon service (www.google.com, t3.gstatic.com) by site domain — so the domains of the sites you add as shortcuts are sent to Google, and Google’s privacy policy applies to those requests. The extension uses no analytics or tracking scripts.'
+      en: 'When you open a new tab, the extension requests the public list of blog posts from its own backend (Cloudflare Workers). That request contains no information that could identify you. To show company logos and the icons of shortcuts you add, your browser also requests icon images from Google’s favicon service (www.google.com, t3.gstatic.com) by site domain — so the domains of the sites you add as shortcuts are sent to Google, and Google’s privacy policy applies to those requests. The extension uses no analytics or tracking scripts.',
+      ja: '新しいタブを開くと、本拡張機能は独自のバックエンド（Cloudflare Workers）に、公開されている技術ブログの記事一覧をリクエストします。このリクエストには、ユーザーを特定できる情報は一切含まれません。また、企業ロゴとユーザーが追加したショートカットのアイコンを表示するため、ブラウザが Google のファビコンサービス（www.google.com、t3.gstatic.com）にサイトのドメインを指定してアイコン画像をリクエストします。このとき、ショートカットに追加したサイトのドメインが Google に送信され、これらのリクエストには Google のプライバシーポリシーが適用されます。分析（analytics）やトラッキング（tracking）のためのスクリプトは使用していません。',
+      zh: '開啟新分頁時，本擴充功能會向自有的後端（Cloudflare Workers）請求公開的技術部落格文章列表，此請求不包含任何可識別使用者身分的資訊。此外，為了顯示公司標誌及你新增的捷徑圖示，瀏覽器會以網站網域向 Google 的網站圖示服務（www.google.com、t3.gstatic.com）請求圖示圖片。此時，你新增為捷徑的網站網域會傳送給 Google，這些請求適用 Google 的隱私權政策。本擴充功能不使用任何分析（analytics）或追蹤（tracking）指令碼。'
     },
-    h_third: { ko: '제3자 제공', en: 'Sharing with third parties' },
+    h_third: { ko: '제3자 제공', en: 'Sharing with third parties', ja: '第三者への提供', zh: '提供給第三方' },
     p_third: {
       ko: '수집하는 개인정보가 없으므로 제3자에게 제공하는 정보도 없습니다. 단, 위 "네트워크 통신"의 아이콘 요청은 사용자의 브라우저에서 Google로 직접 전송됩니다.',
-      en: 'Since no personal information is collected, none is shared with third parties. The icon requests described under “Network communication” go directly from your browser to Google.'
+      en: 'Since no personal information is collected, none is shared with third parties. The icon requests described under “Network communication” go directly from your browser to Google.',
+      ja: '収集する個人情報がないため、第三者に提供する情報もありません。ただし、上記「通信について」のアイコンのリクエストは、ユーザーのブラウザから Google へ直接送信されます。',
+      zh: '由於不收集任何個人資料，因此也沒有提供給第三方的資訊。但上述「網路通訊」中的圖示請求，會由你的瀏覽器直接傳送給 Google。'
     },
-    h_contact: { ko: '문의', en: 'Contact' },
+    h_contact: { ko: '문의', en: 'Contact', ja: 'お問い合わせ', zh: '聯絡我們' },
     p_contact: {
       ko: '문의사항은 <a href="https://github.com/junye0l/techtab">GitHub 저장소</a>의 Issue로 남겨주세요.',
-      en: 'For questions, please open an issue on the <a href="https://github.com/junye0l/techtab">GitHub repository</a>.'
+      en: 'For questions, please open an issue on the <a href="https://github.com/junye0l/techtab">GitHub repository</a>.',
+      ja: 'お問い合わせは <a href="https://github.com/junye0l/techtab">GitHub リポジトリ</a> の Issue にお寄せください。',
+      zh: '如有任何問題，請在 <a href="https://github.com/junye0l/techtab">GitHub 儲存庫</a>提出 Issue。'
     }
   };
   function detect() {
-    try { var s = localStorage.getItem('techtab-locale'); if (s === 'ko' || s === 'en') return s; } catch (e) {}
-    return (navigator.language || 'en').toLowerCase().indexOf('ko') === 0 ? 'ko' : 'en';
+    var all = ['ko', 'en', 'ja', 'zh'];
+    try { var s = localStorage.getItem('techtab-locale'); if (all.indexOf(s) !== -1) return s; } catch (e) {}
+    // 확장과 같은 규칙: ko/ja/zh로 시작하면 그 언어(zh-CN·zh-TW·zh-HK 전부 번체), 그 외 영어
+    var nav = (navigator.language || 'en').toLowerCase();
+    for (var i = 0; i < all.length; i++) if (nav.indexOf(all[i]) === 0) return all[i];
+    return 'en';
   }
   function apply(loc) {
-    document.documentElement.lang = loc;
+    document.documentElement.lang = loc === 'zh' ? 'zh-Hant' : loc;
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
       var m = T[el.getAttribute('data-i18n')];
       if (m && m[loc]) el.textContent = m[loc];

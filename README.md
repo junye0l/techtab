@@ -24,8 +24,8 @@
 *A globe button gathers the global companies' blogs, newest first*
 - 제목 키워드 자동 추출(AI, Kafka, LLM 등) 배지 표시<br>
 *Auto-extracted keyword badges from titles (AI, Kafka, LLM, …)*
-- **영어 / 한국어 지원** — 국내 글은 영어로, 글로벌 글은 한국어로 제목 자동 번역<br>
-*English and Korean — post titles are auto-translated (Korean posts into English, global posts into Korean)*
+- **한국어 / 영어 / 일본어 / 중국어(번체) 지원** — 국내 글은 영·일·중으로, 글로벌 글은 한·일·중으로 제목 자동 번역<br>
+*Korean, English, Japanese, and Traditional Chinese — post titles are auto-translated (Korean posts into EN/JA/ZH, global posts into KO/JA/ZH)*
 - 자주 가는 사이트를 하단 **바로가기 독**에 최대 8개까지 고정 (크롬 기본 새 탭의 바로가기 대체)<br>
 *Pin up to 8 favorite sites to a **shortcut dock** at the bottom — replacing Chrome's default new-tab shortcuts*
 - 다크/라이트 모드, Google 검색창 내장<br>
@@ -47,7 +47,7 @@
 - Cloudflare Workers + D1 (SQLite)
 - fast-xml-parser로 RSS/Atom 피드 파싱 · RSS/Atom feed parsing
 - Cron Trigger로 매시간 자동 수집 · hourly auto-collection
-- DeepL API로 글 제목 자동 번역 (국내→영어, 글로벌→한국어) · post-title auto-translation (KO→EN, global→KO)
+- DeepL API로 글 제목 자동 번역 (국내→영·일·중, 글로벌→한·일·중, 중국어는 번체) · post-title auto-translation (KO→EN/JA/ZH-Hant, global→KO/JA/ZH-Hant)
 
 ## 프로젝트 구조 · Project structure
 

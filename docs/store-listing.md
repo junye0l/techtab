@@ -26,9 +26,9 @@
 
 제목 키워드 자동 추출(AI, Kafka, LLM 등) 배지 표시
 
-영어/한국어 UI, 글 제목 자동 번역 (국내 글은 영어로, 글로벌 글은 한국어로)
+한국어/영어/일본어/중국어(번체) UI, 글 제목 자동 번역 (국내 글은 영어·일본어·중국어로, 글로벌 글은 한국어·일본어·중국어로)
 
-자주 가는 사이트를 하단 독에 최대 8개까지 바로가기로 추가 (크롬 기본 새 탭의 바로가기 대체)
+자주 가는 사이트를 하단 독에 최대 8개까지 바로가기로 추가, 순서 변경, 독 크기 변경 가능 (크롬 기본 새 탭의 바로가기 대체)
 
 다크/라이트 모드, Google 검색창 내장
 
@@ -61,9 +61,9 @@ It auto-collects the RSS feeds of 23 Korean companies — NAVER, Kakao, Toss, Wo
 
 - Auto-extracted keyword badges from titles (AI, Kafka, LLM, and more)
 
-- English and Korean UI, with article titles auto-translated — Korean posts into English, global posts into Korean
+- Korean, English, Japanese, and Traditional Chinese UI, with article titles auto-translated — Korean posts into English, Japanese, and Chinese; global posts into Korean, Japanese, and Chinese
 
-- Pin up to 8 favorite sites to a shortcut dock at the bottom — replacing Chrome's default new-tab shortcuts
+- Pin up to 8 favorite sites to a shortcut dock at the bottom — drag to reorder, resize the dock to fit; it replaces Chrome's default new-tab shortcuts
 
 - Dark/light mode with a built-in Google search box
 
@@ -73,3 +73,77 @@ No sign-up or login, and no personal data is collected. All settings are stored 
 
 ■ Code
 Source on GitHub: https://github.com/junye0l/techtab
+
+## 詳細説明 (日本語)
+
+> 短い説明（拡張機能の説明文）は `extension/public/_locales/ja/messages.json` から自動で入ります。
+
+韓国のテック企業の技術ブログを中心に、海外のビッグテックの技術ブログまで新しいタブにまとめて表示する拡張機能です。記事タイトルは日本語に自動翻訳されます。
+
+NAVER、Kakao、Toss、Woowahan、Daangn など韓国企業23社の技術ブログのRSSを1時間ごとに自動で収集し、気になる企業だけを選んで自分だけのフィードを作れます。Netflix、Stripe、Cloudflare、GitHub、Meta など海外12社のブログは、専用の「グローバル」ビューで新しい順にまとめて読めます。
+
+■ 主な機能
+
+- 韓国23社＋海外12社の技術ブログを自動収集（1時間ごとに更新）
+
+- 読みたい企業だけをボードに追加・削除、ドラッグ＆ドロップで並べ替え
+
+- 地球儀ボタンで海外企業のブログ（Netflix・Stripe・Cloudflare・GitHub・Meta など）を新しい順に一画面で表示
+
+- ブックマークで後で読む記事を保存、既読の記事は区別して表示
+
+- 前回の閲覧以降に投稿された記事に NEW バッジ
+
+- 「NEW」ボタンで、過去7日間に韓国のブログに投稿された記事をまとめて表示
+
+- タイトルからキーワードを自動抽出してバッジ表示（AI、Kafka、LLM など）
+
+- 日本語・韓国語・英語・中国語（繁体字）の UI。記事タイトルは日本語に自動翻訳
+
+- よく使うサイトを下部のドックに最大8つまでショートカットとして追加、並べ替えやドックのサイズ変更も可能（Chrome 標準の新しいタブのショートカットの代わりに）
+
+- ダーク／ライトモード、Google 検索ボックス内蔵
+
+■ プライバシー
+
+会員登録やログインは不要で、個人情報は一切収集しません。すべての設定はブラウザ内にのみ保存されます。詳しくはプライバシーポリシーをご覧ください。
+
+■ コード
+ソースコードは GitHub で公開しています: https://github.com/junye0l/techtab
+
+## 詳細說明 (繁體中文)
+
+> 簡短說明（擴充功能說明）會自動從 `extension/public/_locales/zh_TW/messages.json` 帶入。CWS 後台的 `zh_CN` 分頁也貼上同一份繁體中文。
+
+以韓國科技公司的技術部落格為主，連同海外大型科技公司的技術部落格，一起集中在新分頁的擴充功能。文章標題會自動翻譯成繁體中文。
+
+每小時自動收集 NAVER、Kakao、Toss、Woowahan、Daangn 等 23 家韓國企業的技術部落格 RSS，你可以只挑選感興趣的公司，打造專屬於你的動態。Netflix、Stripe、Cloudflare、GitHub、Meta 等 12 家海外企業的部落格，則集中在獨立的「全球」檢視中，依最新順序排列。
+
+■ 主要功能
+
+- 自動收集 23 家韓國＋12 家海外企業的技術部落格（每小時更新）
+
+- 只把想看的公司加入看板或移除，並可拖放調整順序
+
+- 點選地球按鈕，即可在同一畫面依最新順序瀏覽海外企業部落格（Netflix・Stripe・Cloudflare・GitHub・Meta 等）
+
+- 用書籤儲存稍後要讀的文章，已讀文章會另外標示
+
+- 上次瀏覽後發布的文章會顯示 NEW 標記
+
+- 點選「NEW」按鈕，即可一次瀏覽最近 7 天韓國部落格發布的新文章
+
+- 自動從標題擷取關鍵字並顯示標籤（AI、Kafka、LLM 等）
+
+- 支援繁體中文、韓文、英文、日文介面，文章標題自動翻譯成繁體中文
+
+- 可將常用網站加入底部 Dock，最多 8 個捷徑，並可調整順序與 Dock 大小（取代 Chrome 預設新分頁的捷徑）
+
+- 深色／淺色模式，內建 Google 搜尋框
+
+■ 隱私權
+
+不需註冊或登入，也不會收集任何個人資料。所有設定只會儲存在你的瀏覽器中。詳情請參閱隱私權政策。
+
+■ 程式碼
+原始碼公開於 GitHub：https://github.com/junye0l/techtab

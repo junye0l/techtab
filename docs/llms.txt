@@ -11,7 +11,7 @@
 ## What it does
 - Aggregates 23 Korean company engineering blog RSS feeds (NAVER, Kakao, Toss, Daangn, Woowahan, and more) into one new-tab feed, plus a separate view of 12 global engineering blogs (Netflix, Stripe, Cloudflare, GitHub, Meta, and more)
 - Pick which companies to follow, reorder columns by drag and drop, bookmark posts, mark as read, NEW badges for posts since last visit
-- Korean and English UI; post titles are machine-translated (DeepL) — Korean posts into English, global posts into Korean
+- Korean, English, Japanese, and Traditional Chinese UI; post titles are machine-translated (DeepL) — Korean posts into English, Japanese, and Traditional Chinese; global posts into Korean, Japanese, and Traditional Chinese
 - A shortcut dock at the bottom for up to 8 user-chosen sites, replacing Chrome's default new-tab shortcuts
 - Dark/light mode, built-in Google search box
 

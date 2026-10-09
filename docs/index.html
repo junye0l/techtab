@@ -107,6 +107,10 @@
     /* 한국어가 "고정하세/요"처럼 음절 단위로 끊기지 않게 어절 단위로만 줄바꿈 (영문엔 영향 없음) */
     word-break: keep-all;
   }
+  /* 일본어·중국어는 띄어쓰기가 없어 keep-all이면 문장 전체가 한 덩어리가 돼 줄바꿈이 안 됨 → 글자 단위(기본)로 */
+  body:lang(ja), body:lang(zh-Hant) { word-break: normal; line-break: strict; }
+  /* 일본어는 크롬이 문절 단위로 끊어줌 (BudouX 내장, 미지원 브라우저는 위 normal로 폴백) */
+  body:lang(ja) { word-break: auto-phrase; }
   ::selection { background: var(--ink); color: var(--canvas-soft); }
 
   a { color: inherit; text-decoration: none; }
@@ -360,7 +364,7 @@
     right: 16px;
     z-index: 100;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     padding: 3px;
     border-radius: 9999px;
     background: color-mix(in srgb, var(--canvas) 72%, transparent);
@@ -399,6 +403,8 @@
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .lang-switch[data-cur="en"] .lang-thumb { transform: translateX(38px); }
+  .lang-switch[data-cur="ja"] .lang-thumb { transform: translateX(76px); }
+  .lang-switch[data-cur="zh"] .lang-thumb { transform: translateX(114px); }
 
   /* ---------- closing cta ---------- */
   /* 상단 hero와 수미상관: 같은 픽셀 별 + 위쪽 여백 확보 */
@@ -637,63 +643,87 @@
   <span class="lang-thumb" aria-hidden="true"></span>
   <button type="button" data-lang="ko" aria-label="한국어">KO</button>
   <button type="button" data-lang="en" aria-label="English">EN</button>
+  <button type="button" data-lang="ja" aria-label="日本語">JA</button>
+  <button type="button" data-lang="zh" aria-label="繁體中文" lang="zh-Hant">中文</button>
 </div>
 <script>
 (function () {
   var T = {
     heroSub: {
       ko: '국내 23곳, 글로벌 12곳. 빅테크 기술 블로그를 새&nbsp;탭 하나로 모아봅니다.<br>자주 가는 사이트 바로가기까지, 회원가입 없이.',
-      en: '23 Korean and 12 global engineering blogs, in one new&nbsp;tab.<br>Shortcuts to your favorite sites too — no sign-up.'
+      en: '23 Korean and 12 global engineering blogs, in one new&nbsp;tab.<br>Shortcuts to your favorite sites too — no sign-up.',
+      ja: '韓国23社・海外12社の技術ブログを新しいタブひとつに。<br>タイトルは日本語に自動翻訳、会員登録も不要です。',
+      zh: '23 家韓國、12 家海外企業的技術部落格，集中在一個新分頁。<br>標題自動翻譯成繁體中文，免註冊。'
     },
-    featuresHead: { ko: '이걸로 충분해요', en: 'This is all you need' },
-    f1h: { ko: '자동 수집', en: 'Automatic collection' },
+    featuresHead: { ko: '이걸로 충분해요', en: 'This is all you need', ja: 'これだけで十分です', zh: '這樣就夠了' },
+    f1h: { ko: '자동 수집', en: 'Automatic collection', ja: '自動収集', zh: '自動收集' },
     f1p: {
       ko: '매시간 23개 기업 기술 블로그의 RSS를 긁어와 최신 글을 새 탭에 띄웁니다. 직접 확인하러 다닐 필요가 없습니다.',
-      en: 'Every hour it pulls the RSS feeds of 23 companies’ engineering blogs and surfaces the latest posts on your new tab. No need to check each one yourself.'
+      en: 'Every hour it pulls the RSS feeds of 23 companies’ engineering blogs and surfaces the latest posts on your new tab. No need to check each one yourself.',
+      ja: '1時間ごとに23社の技術ブログのRSSを取得し、最新記事を新しいタブに表示します。一つずつ確認しに行く必要はありません。',
+      zh: '每小時抓取 23 家企業技術部落格的 RSS，把最新文章顯示在新分頁上，不必再一個個去查看。'
     },
-    f2h: { ko: '나만의 피드', en: 'Your own feed' },
+    f2h: { ko: '나만의 피드', en: 'Your own feed', ja: '自分だけのフィード', zh: '專屬於你的動態' },
     f2p: {
       ko: '관심 있는 기업만 골라 보드에 추가하고, 드래그 앤 드롭으로 순서를 원하는 대로 바꿀 수 있습니다.',
-      en: 'Pick only the companies you care about, add them to your board, and reorder them however you like with drag and drop.'
+      en: 'Pick only the companies you care about, add them to your board, and reorder them however you like with drag and drop.',
+      ja: '気になる企業だけを選んでボードに追加し、ドラッグ＆ドロップで好きな順に並べ替えられます。',
+      zh: '只挑選感興趣的公司加入看板，並可透過拖放自由調整順序。'
     },
-    f3h: { ko: '북마크 · 읽음 표시', en: 'Bookmarks & read state' },
+    f3h: { ko: '북마크 · 읽음 표시', en: 'Bookmarks & read state', ja: 'ブックマーク・既読表示', zh: '書籤・已讀標示' },
     f3p: {
       ko: '나중에 읽을 글은 북마크로, 이미 본 글은 읽음 표시로 구분합니다. 마지막으로 본 이후 올라온 글엔 NEW 뱃지가 붙습니다.',
-      en: 'Bookmark posts for later; already-read posts are dimmed. Anything published since your last visit gets a NEW badge.'
+      en: 'Bookmark posts for later; already-read posts are dimmed. Anything published since your last visit gets a NEW badge.',
+      ja: '後で読む記事はブックマークに、読んだ記事は既読として区別します。前回の閲覧以降に投稿された記事には NEW バッジが付きます。',
+      zh: '稍後要讀的文章可加入書籤，已讀文章會另外標示。上次瀏覽後發布的文章會顯示 NEW 標記。'
     },
-    f4h: { ko: '최신 글 모음', en: 'Latest posts' },
+    f4h: { ko: '최신 글 모음', en: 'Latest posts', ja: '最新記事', zh: '最新文章' },
     f4p: {
       ko: '헤더의 NEW 버튼을 누르면 최근 7일간 모든 블로그에 올라온 새 글을 소스 구분 없이 한 화면에 모아 볼 수 있습니다.',
-      en: 'Hit the NEW button in the header to see every post from the last 7 days across all blogs, gathered into one view.'
+      en: 'Hit the NEW button in the header to see every post from the last 7 days across all blogs, gathered into one view.',
+      ja: 'ヘッダーの NEW ボタンを押すと、過去7日間にすべてのブログに投稿された記事をまとめて一画面で見られます。',
+      zh: '點選頁首的 NEW 按鈕，即可在同一畫面瀏覽最近 7 天所有部落格發布的新文章。'
     },
-    f5h: { ko: '글로벌 뷰', en: 'Global view' },
+    f5h: { ko: '글로벌 뷰', en: 'Global view', ja: 'グローバルビュー', zh: '全球檢視' },
     f5p: {
       ko: '상단의 지구본 버튼을 누르면 글로벌 12개 기업의 블로그를 최신순으로 모아 볼 수 있습니다.',
-      en: 'Tap the globe button at the top to see 12 global companies’ blogs, newest first.'
+      en: 'Tap the globe button at the top to see 12 global companies’ blogs, newest first.',
+      ja: '上部の地球儀ボタンを押すと、海外12社のブログを新しい順にまとめて見られます。',
+      zh: '點選上方的地球按鈕，即可依最新順序瀏覽 12 家海外企業的部落格。'
     },
-    f6h: { ko: '다크모드 · 검색창', en: 'Dark mode & search' },
-    fwh: { ko: '바로가기 독', en: 'Shortcut dock' },
+    f6h: { ko: '다크모드 · 검색창', en: 'Dark mode & search', ja: 'ダークモード・検索ボックス', zh: '深色模式・搜尋框' },
+    fwh: { ko: '바로가기 독', en: 'Shortcut dock', ja: 'ショートカットドック', zh: '捷徑 Dock' },
     fwp: {
       ko: '자주 가는 사이트를 하단 독에 최대 8개까지 고정하세요. 크롬 기본 새 탭의 바로가기를 그대로 대신합니다.',
-      en: 'Pin up to 8 favorite sites to a dock at the bottom — it takes over from Chrome’s default new-tab shortcuts.'
+      en: 'Pin up to 8 favorite sites to a dock at the bottom — it takes over from Chrome’s default new-tab shortcuts.',
+      ja: 'よく使うサイトを下部のドックに最大8つまで固定できます。Chrome 標準の新しいタブのショートカットの代わりになります。',
+      zh: '可將最多 8 個常用網站固定在底部 Dock，直接取代 Chrome 預設新分頁的捷徑。'
     },
     f6p: {
       ko: '라이트/다크 모드를 지원하고, Google 검색창을 내장해서 새 탭을 떠날 필요가 없습니다.',
-      en: 'Light and dark mode, plus a built-in Google search box so you never have to leave the new tab.'
+      en: 'Light and dark mode, plus a built-in Google search box so you never have to leave the new tab.',
+      ja: 'ライト／ダークモードに対応し、Google 検索ボックスを内蔵しているので、新しいタブを離れる必要がありません。',
+      zh: '支援淺色／深色模式，並內建 Google 搜尋框，不必離開新分頁。'
     },
     closingSub: {
       ko: '새 탭을 열 때마다, 오늘 올라온 기술 블로그를 확인하세요.',
-      en: 'Every time you open a new tab, catch up on today’s engineering blogs.'
+      en: 'Every time you open a new tab, catch up on today’s engineering blogs.',
+      ja: '新しいタブを開くたびに、今日の技術ブログをチェックしましょう。',
+      zh: '每次開啟新分頁，就能掌握今天的技術部落格。'
     },
-    privacy: { ko: '개인정보처리방침', en: 'Privacy Policy' },
-    store: { ko: 'Chrome 웹 스토어', en: 'Chrome Web Store' }
+    privacy: { ko: '개인정보처리방침', en: 'Privacy Policy', ja: 'プライバシーポリシー', zh: '隱私權政策' },
+    store: { ko: 'Chrome 웹 스토어', en: 'Chrome Web Store', ja: 'Chrome ウェブストア', zh: 'Chrome 線上應用程式商店' }
   };
   function detect() {
-    try { var s = localStorage.getItem('techtab-locale'); if (s === 'ko' || s === 'en') return s; } catch (e) {}
-    return (navigator.language || 'en').toLowerCase().indexOf('ko') === 0 ? 'ko' : 'en';
+    var all = ['ko', 'en', 'ja', 'zh'];
+    try { var s = localStorage.getItem('techtab-locale'); if (all.indexOf(s) !== -1) return s; } catch (e) {}
+    // 확장과 같은 규칙: ko/ja/zh로 시작하면 그 언어(zh-CN·zh-TW·zh-HK 전부 번체), 그 외 영어
+    var nav = (navigator.language || 'en').toLowerCase();
+    for (var i = 0; i < all.length; i++) if (nav.indexOf(all[i]) === 0) return all[i];
+    return 'en';
   }
   function apply(loc) {
-    document.documentElement.lang = loc;
+    document.documentElement.lang = loc === 'zh' ? 'zh-Hant' : loc;
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
       var m = T[el.getAttribute('data-i18n')];
       if (m && m[loc]) el.textContent = m[loc];
