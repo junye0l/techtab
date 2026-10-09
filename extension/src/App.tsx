@@ -686,9 +686,14 @@ export default function App() {
     });
   }
 
-  const bookmarkList = Object.values(bookmarks).sort(
-    (a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime()
-  );
+  // 북마크는 저장 순간의 스냅샷이라 그 뒤에 생긴 번역(title_ja 등)이 없음 → 지금 목록에 같은 글이 있으면 최신 것으로 표시.
+  // 목록에서 빠진 옛 북마크는 스냅샷 그대로 (displayTitle 폴백으로 영어/원문)
+  const bookmarkList = useMemo(() => {
+    const latest = new Map(articles.map((a) => [a.link, a]));
+    return Object.values(bookmarks)
+      .map((b) => latest.get(b.link) ?? b)
+      .sort((a, b) => new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime());
+  }, [articles, bookmarks]);
 
   // 최근 7일 안에 올라온 국내 글을 소스 상관없이 최신순으로 모아 상위 40개
   const recentList = useMemo(() => {
