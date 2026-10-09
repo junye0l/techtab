@@ -168,15 +168,89 @@ body {
   color: var(--color-link);
 }
 
-.lang-toggle {
-  width: auto;
-  gap: 4px;
-  padding: 0 6px;
+/* 언어 선택: 접힘 = 문A + 현재 코드(지금 .theme-toggle과 같은 간격),
+   호버/키보드 포커스 시 KO · EN · JA · 中文 가로로 펼침 */
+.lang-switch {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 34px;
+  padding: 0 2px 0 6px;
+  color: var(--color-ink);
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow 0.2s, background 0.2s, padding 0.25s ease, gap 0.25s ease;
 }
 
-.lang-toggle-label {
+.lang-switch:hover,
+.lang-switch:focus-within {
+  gap: 2px;
+  padding-left: 12px;
+  background: var(--color-canvas);
+  box-shadow: inset 0 0 0 1px var(--color-hairline), 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.lang-switch-icon {
+  flex-shrink: 0;
+  transition: margin-right 0.25s ease;
+}
+
+.lang-switch:hover .lang-switch-icon,
+.lang-switch:focus-within .lang-switch-icon {
+  margin-right: 6px;
+}
+
+.lang-switch button {
+  max-width: 0;
+  min-width: 0;
+  height: 28px;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
   font-family: var(--font-mono);
   font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-mute);
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: max-width 0.25s ease, opacity 0.2s, padding 0.25s ease, background 0.15s, color 0.15s;
+}
+
+.lang-switch button.lang-current {
+  max-width: 60px;
+  padding: 0 4px;
+  opacity: 1;
+  color: var(--color-ink);
+}
+
+.lang-switch:hover button,
+.lang-switch:focus-within button {
+  max-width: 60px;
+  padding: 0 11px;
+  opacity: 1;
+}
+
+.lang-switch:hover button.lang-current,
+.lang-switch:focus-within button.lang-current {
+  color: var(--color-canvas);
+  background: var(--color-ink);
+}
+
+.lang-switch button:not(.lang-current):hover {
+  color: var(--color-ink);
+  background: var(--color-canvas-soft-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lang-switch,
+  .lang-switch-icon,
+  .lang-switch button {
+    transition: none;
+  }
 }
 
 .new-toggle {

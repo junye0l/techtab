@@ -3,7 +3,7 @@ import { Bookmark, ChevronDown, Globe, GripVertical, Languages, Moon, Plus, Sear
 import "./index.css";
 import { faviconUrl, GLOBAL_SOURCES, siteIconUrl, sourceLabel } from "./sourceDomains";
 import { extractKeyword, keywordLabel } from "./keywords";
-import { useI18n, type Locale, type TFunc } from "./i18n";
+import { localeTag, LOCALES, useI18n, type Locale, type TFunc } from "./i18n";
 import GoogleIcon from "./GoogleIcon";
 import { useFlip } from "./useFlip";
 
@@ -35,14 +35,23 @@ interface Article {
   title: string;
   title_en: string | null;
   title_ko: string | null;
+  title_ja: string | null;
+  title_zh: string | null;
   link: string;
   source: string;
   published_at: string | null;
 }
 
-// 읽는 사람 언어의 번역본이 있으면 그걸, 없으면(번역 실패/백필 전, 또는 원문이 이미 그 언어) 원문으로 폴백
+// 읽는 사람 언어의 번역본이 있으면 그걸, 없으면(번역 실패/백필 전, 또는 원문이 이미 그 언어) 원문으로 폴백.
+// 일·중은 그 사이에 영어 번역을 한 번 더 거침 — 국내 글을 한국어 원문으로 보여주는 것보다 영어가 읽힘
+// (글로벌 글은 원문이 영어라 title_en이 비어 있어 자연히 원문으로 떨어짐)
 function displayTitle(article: Article, locale: Locale): string {
-  const translated = locale === "en" ? article.title_en : article.title_ko;
+  const translated = {
+    ko: article.title_ko,
+    en: article.title_en,
+    ja: article.title_ja ?? article.title_en,
+    zh: article.title_zh ?? article.title_en,
+  }[locale];
   return translated ?? article.title;
 }
 
@@ -61,7 +70,7 @@ function timeAgo(iso: string | null, locale: Locale, justNow: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const hours = Math.floor(diffMs / 3600_000);
   if (hours < 1) return justNow;
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always", style: "narrow" });
+  const rtf = new Intl.RelativeTimeFormat(localeTag(locale), { numeric: "always", style: "narrow" });
   if (hours < 24) return rtf.format(-hours, "hour");
   return rtf.format(-Math.floor(hours / 24), "day");
 }
@@ -784,14 +793,6 @@ export default function App() {
           {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
         </button>
         <button
-          className="theme-toggle lang-toggle"
-          onClick={() => setLocale(locale === "ko" ? "en" : "ko")}
-          aria-label={t("switchLanguage")}
-        >
-          <Languages size={16} />
-          <span className="lang-toggle-label">{locale === "ko" ? "KO" : "EN"}</span>
-        </button>
-        <button
           className={`theme-toggle new-toggle ${showRecentFeed ? "theme-toggle-active" : ""} ${
             hasUnseenRecent && !showRecentFeed ? "new-toggle-bounce" : ""
           }`}
@@ -807,6 +808,24 @@ export default function App() {
         >
           <Globe size={16} />
         </button>
+        {/* 평소엔 현재 언어만, 마우스를 올리거나 키보드로 들어오면 4개 언어가 옆으로 펼쳐짐.
+            헤더 맨 끝이라 펼쳐져도 다른 버튼이 밀리지 않음 */}
+        <div className="lang-switch" role="group" aria-label={t("switchLanguage")}>
+          <Languages size={16} className="lang-switch-icon" aria-hidden />
+          {LOCALES.map((l) => (
+            <button
+              key={l.code}
+              lang={localeTag(l.code)}
+              className={l.code === locale ? "lang-current" : ""}
+              onClick={() => setLocale(l.code)}
+              aria-pressed={l.code === locale}
+              aria-label={l.name}
+              title={l.name}
+            >
+              {l.short}
+            </button>
+          ))}
+        </div>
       </header>
 
       {!showBookmarksOnly && !showRecentFeed && !showGlobalFeed && columns.length > 0 && (

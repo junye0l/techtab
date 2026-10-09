@@ -1,3 +1,5 @@
+import type { Locale } from "./i18n";
+
 // Google 파비콘 서비스가 인식하지 못하는 소스는 번들 로컬 에셋으로 대체
 //  - 우아한형제들: techblog.woowahan.com에 등록된 파비콘 없음 (로고 텍스트 크롭)
 //  - 요기요: yogiyo.co.kr 파비콘이 Google 인덱스에 없음 (자체 파비콘 그대로 사용)
@@ -110,7 +112,8 @@ const SOURCE_LABELS_EN: Record<string, string> = {
   "요기요": "Yogiyo",
 };
 
-export function sourceLabel(source: string, locale: "ko" | "en"): string {
+// 일·중도 영문 브랜드명 사용 (회사들이 해외에서 쓰는 공식 표기)
+export function sourceLabel(source: string, locale: Locale): string {
   if (locale === "ko") return source;
   return SOURCE_LABELS_EN[source] ?? source;
 }
