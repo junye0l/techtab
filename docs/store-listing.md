@@ -16,7 +16,7 @@
 
 원하는 기업만 골라서 보드에 추가/제거, 드래그 앤 드롭으로 순서 변경
 
-지구본 버튼으로 글로벌 기업 블로그(Netflix·Stripe·Cloudflare·GitHub·Meta 등)를 최신순 한 화면에 모아보기
+지구본 버튼으로 글로벌 기업 블로그를 최신순 한 화면에 모아보기
 
 북마크로 나중에 읽을 글 저장, 읽음 표시로 이미 본 글 구분
 
@@ -51,7 +51,7 @@ It auto-collects the RSS feeds of 23 Korean companies — NAVER, Kakao, Toss, Wo
 
 - Add or remove only the companies you want; reorder columns by drag and drop
 
-- A globe button gathers the global blogs (Netflix, Stripe, Cloudflare, GitHub, Meta, and more) into one newest-first view
+- A globe button gathers the global blogs into one newest-first view
 
 - Bookmark posts to read later; already-read posts are marked
 
@@ -80,7 +80,7 @@ Source on GitHub: https://github.com/junye0l/techtab
 
 韓国のテック企業の技術ブログを中心に、海外のビッグテックの技術ブログまで新しいタブにまとめて表示する拡張機能です。記事タイトルは日本語に自動翻訳されます。
 
-NAVER、Kakao、Toss、Woowahan、Daangn など韓国企業23社の技術ブログのRSSを1時間ごとに自動で収集し、気になる企業だけを選んで自分だけのフィードを作れます。Netflix、Stripe、Cloudflare、GitHub、Meta など海外12社のブログは、専用の「グローバル」ビューで新しい順にまとめて読めます。
+韓国のテック企業23社の技術ブログのRSSを1時間ごとに自動で収集し、気になる企業だけを選んで自分だけのフィードを作れます。海外のテック企業12社のブログは、専用の「グローバル」ビューで新しい順にまとめて読めます。
 
 ■ 主な機能
 
@@ -88,7 +88,7 @@ NAVER、Kakao、Toss、Woowahan、Daangn など韓国企業23社の技術ブロ�
 
 - 読みたい企業だけをボードに追加・削除、ドラッグ＆ドロップで並べ替え
 
-- 地球儀ボタンで海外企業のブログ（Netflix・Stripe・Cloudflare・GitHub・Meta など）を新しい順に一画面で表示
+- 地球儀ボタンで海外企業のブログを新しい順に一画面で表示
 
 - ブックマークで後で読む記事を保存、既読の記事は区別して表示
 
@@ -96,7 +96,7 @@ NAVER、Kakao、Toss、Woowahan、Daangn など韓国企業23社の技術ブロ�
 
 - 「NEW」ボタンで、過去7日間に韓国のブログに投稿された記事をまとめて表示
 
-- タイトルからキーワードを自動抽出してバッジ表示（AI、Kafka、LLM など）
+- タイトルからキーワードを自動抽出してバッジ表示
 
 - 日本語・韓国語・英語・中国語（繁体字）の UI。記事タイトルは日本語に自動翻訳
 
@@ -117,7 +117,7 @@ NAVER、Kakao、Toss、Woowahan、Daangn など韓国企業23社の技術ブロ�
 
 以韓國科技公司的技術部落格為主，連同海外大型科技公司的技術部落格，一起集中在新分頁的擴充功能。文章標題會自動翻譯成繁體中文。
 
-每小時自動收集 NAVER、Kakao、Toss、Woowahan、Daangn 等 23 家韓國企業的技術部落格 RSS，你可以只挑選感興趣的公司，打造專屬於你的動態。Netflix、Stripe、Cloudflare、GitHub、Meta 等 12 家海外企業的部落格，則集中在獨立的「全球」檢視中，依最新順序排列。
+每小時自動收集 23 家韓國科技公司的技術部落格 RSS，你可以只挑選感興趣的公司，打造專屬於你的動態。另外 12 家海外科技公司的部落格，則集中在獨立的「全球」檢視中，依最新順序排列。
 
 ■ 主要功能
 
@@ -125,7 +125,7 @@ NAVER、Kakao、Toss、Woowahan、Daangn など韓国企業23社の技術ブロ�
 
 - 只把想看的公司加入看板或移除，並可拖放調整順序
 
-- 點選地球按鈕，即可在同一畫面依最新順序瀏覽海外企業部落格（Netflix・Stripe・Cloudflare・GitHub・Meta 等）
+- 點選地球按鈕，即可在同一畫面依最新順序瀏覽海外企業部落格
 
 - 用書籤儲存稍後要讀的文章，已讀文章會另外標示
 
@@ -133,7 +133,7 @@ NAVER、Kakao、Toss、Woowahan、Daangn など韓国企業23社の技術ブロ�
 
 - 點選「NEW」按鈕，即可一次瀏覽最近 7 天韓國部落格發布的新文章
 
-- 自動從標題擷取關鍵字並顯示標籤（AI、Kafka、LLM 等）
+- 自動從標題擷取關鍵字並顯示標籤
 
 - 支援繁體中文、韓文、英文、日文介面，文章標題自動翻譯成繁體中文
 
