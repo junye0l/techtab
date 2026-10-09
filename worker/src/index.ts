@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import { FEEDS, type Region } from "./feeds";
+import { FEEDS, type Lang, type Region } from "./feeds";
 
 // Workers Rate Limiting 바인딩 (wrangler.toml의 [[unstable_rate_limits]])
 interface RateLimit {
@@ -121,6 +121,76 @@ const MAX_STRIPPED_FEED_BYTES = 5 * 1024 * 1024;
 // 뒤 순서 피드가 아예 처리되지 못함. /api/articles는 어차피 소스당 최신 10개만 쓰므로 넉넉히 30개면 충분.
 const MAX_ITEMS_PER_FEED = 30;
 
+// /api/articles가 소스당 내려주는 글 수. 번역도 이 범위(실제로 보이는 글)만 함
+const ARTICLES_PER_SOURCE = 10;
+
+// 피드 원문 언어별 번역 대상. 일·중은 영어를 거치지 않고 원문에서 바로 번역 (중역하면 오역이 쌓임).
+// 중국어는 번체(ZH-HANT)만 — 중국 본토는 크롬 웹스토어 접속이 막혀 있어 대만·홍콩 기준으로 통일.
+// col은 이 표의 고정 리터럴이라 외부 입력이 아님 (SQL에 끼워 넣어도 인젝션 무관) — 외부 값으로 바꾸지 말 것.
+const TRANSLATIONS: Record<Lang, { source: string; targets: { lang: string; col: string }[] }> = {
+  ko: {
+    source: "KO",
+    targets: [
+      { lang: "EN-US", col: "title_en" },
+      { lang: "JA", col: "title_ja" },
+      { lang: "ZH-HANT", col: "title_zh" },
+    ],
+  },
+  en: {
+    source: "EN",
+    targets: [
+      { lang: "KO", col: "title_ko" },
+      { lang: "JA", col: "title_ja" },
+      { lang: "ZH-HANT", col: "title_zh" },
+    ],
+  },
+};
+
+// 번역은 피드마다가 아니라 "원문 언어 × 대상 언어"마다 DeepL 1번 (한 요청 최대 50개).
+// 피드마다 대상 3개씩 부르면 국내 패스가 23 fetch + 69 DeepL로 무료 플랜 subrequest 상한(50)을 넘음 → 23 + 3.
+// 대상 컬럼이 비어 있는 행을 최신순 50개: 새 글 + 지난 실패분 재시도 + 백필을 한 쿼리로 겸함.
+// 실제로 보이는 소스당 최신 ARTICLES_PER_SOURCE개 안에서만 골라서, 화면에 안 나오는 옛 글엔 쿼터를 안 씀.
+// ponytail: 특정 제목이 계속 실패하면 매시간 재시도됨 — 상한 50이라 폭주는 아니고 확장에 폴백이 있어 무해.
+async function translatePending(env: Env, feeds: typeof FEEDS) {
+  for (const lang of ["ko", "en"] as const) {
+    const sources = feeds.filter((f) => f.lang === lang).map((f) => f.source);
+    if (sources.length === 0) continue;
+    const placeholders = sources.map(() => "?").join(", ");
+    const { source, targets } = TRANSLATIONS[lang];
+
+    for (const { lang: target, col } of targets) {
+      try {
+        const { results: pending } = await env.DB.prepare(
+          `SELECT link, title FROM (
+             SELECT link, title, published_at, ${col} AS translated,
+                    ROW_NUMBER() OVER (PARTITION BY source ORDER BY published_at DESC) AS rn
+             FROM articles WHERE source IN (${placeholders})
+           ) WHERE rn <= ${ARTICLES_PER_SOURCE} AND translated IS NULL
+           ORDER BY published_at DESC LIMIT 50`
+        )
+          .bind(...sources)
+          .all<{ link: string; title: string }>();
+        if (pending.length === 0) continue;
+
+        const translated = await translateTitles(
+          pending.map((r) => r.title),
+          env.DEEPL_API_KEY,
+          source,
+          target
+        );
+        const updates = pending.flatMap((r, i) =>
+          translated[i]
+            ? [env.DB.prepare(`UPDATE articles SET ${col} = ? WHERE link = ?`).bind(translated[i], r.link)]
+            : []
+        );
+        if (updates.length > 0) await env.DB.batch(updates);
+      } catch (err) {
+        console.error(`failed to translate ${source}→${target}`, err);
+      }
+    }
+  }
+}
+
 async function collectFeeds(env: Env, region: Region | null) {
   const now = new Date().toISOString();
   const feeds = region ? FEEDS.filter((f) => f.region === region) : FEEDS;
@@ -149,42 +219,12 @@ async function collectFeeds(env: Env, region: Region | null) {
           .bind(item.link, item.title, feed.source, publishedAt, now)
           .run();
       }
-
-      // 번역 방향은 피드 언어로 결정: 국내(ko) → title_en, 글로벌(en) → title_ko.
-      // targetCol은 이 삼항이 만든 고정 리터럴이라 외부 입력이 아님 (SQL 인젝션 무관).
-      const [sourceLang, targetLang, targetCol] =
-        feed.lang === "en"
-          ? (["EN", "KO", "title_ko"] as const)
-          : (["KO", "EN-US", "title_en"] as const);
-
-      // 이번에 새로 들어온 행 + 과거에 번역이 비어있는 행을 최근 것부터 최대 20개 채움.
-      // 새 글 번역 + 지난번 실패분 재시도 + 백필을 한 쿼리로 겸함 (피드당 DeepL 요청 1번).
-      // ponytail: 특정 제목이 계속 실패하면 매시간 재시도됨 — 상한 20이라 폭주는 아니고 원문 폴백이 있어 무해.
-      const { results: pending } = await env.DB.prepare(
-        `SELECT link, title FROM articles WHERE source = ? AND ${targetCol} IS NULL
-         ORDER BY published_at DESC LIMIT 20`
-      )
-        .bind(feed.source)
-        .all<{ link: string; title: string }>();
-
-      if (pending.length > 0) {
-        const translated = await translateTitles(
-          pending.map((r) => r.title),
-          env.DEEPL_API_KEY,
-          sourceLang,
-          targetLang
-        );
-        for (let i = 0; i < pending.length; i++) {
-          if (!translated[i]) continue;
-          await env.DB.prepare(`UPDATE articles SET ${targetCol} = ? WHERE link = ?`)
-            .bind(translated[i], pending[i].link)
-            .run();
-        }
-      }
     } catch (err) {
       console.error(`failed to collect ${feed.source}`, err);
     }
   }
+
+  await translatePending(env, feeds);
 }
 
 // /api/articles 응답을 아이솔레이트 메모리에 짧게 캐시 — 반복/폭주 요청이 매번 D1까지 내려가지 않도록.
@@ -215,11 +255,11 @@ export default {
         );
         const placeholders = sources.map(() => "?").join(", ");
         const { results } = await env.DB.prepare(
-          `SELECT title, title_en, title_ko, link, source, published_at FROM (
+          `SELECT title, title_en, title_ko, title_ja, title_zh, link, source, published_at FROM (
              SELECT *, ROW_NUMBER() OVER (PARTITION BY source ORDER BY published_at DESC) AS rn
              FROM articles
              WHERE source IN (${placeholders})
-           ) WHERE rn <= 10
+           ) WHERE rn <= ${ARTICLES_PER_SOURCE}
            ORDER BY published_at DESC`
         )
           .bind(...sources)
