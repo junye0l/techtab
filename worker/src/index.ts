@@ -209,6 +209,30 @@ async function translatePending(env: Env, feeds: typeof FEEDS) {
   }
 }
 
+// 소스당 최신 KEEP_PER_SOURCE개만 남김. 번역 대상 선택·/api/articles 쿼리가 둘 다 테이블 전체를 윈도우로 훑으므로
+// 안 지우면 읽기량이 행 수에 비례해 계속 늘어남 (2026-11 실측: 하루 116만 행, 1년이면 무료 한도 500만 초과 추세).
+// MAX_ITEMS_PER_FEED보다 커야 함 — 피드가 아직 내려주는 글을 지우면 다음 크론이 다시 INSERT하고 다시 번역함.
+// 보이는 건 소스당 ARTICLES_PER_SOURCE개뿐이고 북마크는 브라우저에 스냅샷으로 저장돼 있어 지워도 무해.
+// 하루 한 번만 실행 (scheduled) — DELETE도 테이블 전체를 정렬해서(2.4천 행에 rows_read 1.4만) 매 패스마다 돌리면
+// 아끼는 것만큼 다시 읽음. 하루 증가분은 ~45행이라 일 1회면 충분.
+const KEEP_PER_SOURCE = 40;
+
+async function pruneOldArticles(env: Env) {
+  try {
+    await env.DB.prepare(
+      `DELETE FROM articles WHERE id IN (
+         SELECT id FROM (
+           SELECT id, ROW_NUMBER() OVER (PARTITION BY source ORDER BY published_at DESC) AS rn FROM articles
+         ) WHERE rn > ?
+       )`
+    )
+      .bind(KEEP_PER_SOURCE)
+      .run();
+  } catch (err) {
+    console.error("failed to prune old articles", err);
+  }
+}
+
 async function collectFeeds(env: Env, region: Region | null) {
   const now = new Date().toISOString();
   const feeds = region ? FEEDS.filter((f) => f.region === region) : FEEDS;
@@ -306,5 +330,8 @@ export default {
     const CRON_REGIONS: Record<string, Region> = { "0 * * * *": "kr", "30 * * * *": "global", "45 * * * *": "jp" };
     const region: Region | null = CRON_REGIONS[event.cron] ?? null;
     await collectFeeds(env, region);
+    if (region === null || (region === "kr" && new Date(event.scheduledTime).getUTCHours() === 0)) {
+      await pruneOldArticles(env);
+    }
   },
 };
