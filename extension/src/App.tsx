@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Bookmark, ChevronDown, Globe, GripVertical, Languages, Moon, Plus, Search, Sun, X } from "lucide-react";
 import "./index.css";
-import { faviconUrl, GLOBAL_SOURCES, siteIconUrl, sourceLabel } from "./sourceDomains";
+import { faviconUrl, siteIconUrl, sourceLabel } from "./sourceDomains";
 import { extractKeyword, keywordLabel } from "./keywords";
 import { localeTag, LOCALES, useI18n, type Locale, type TFunc } from "./i18n";
 import GoogleIcon from "./GoogleIcon";
@@ -10,22 +10,30 @@ import { useFlip } from "./useFlip";
 const LogoIntroCanvas = lazy(() => import("./LogoIntroCanvas"));
 
 // 로컬에서 로컬 worker로 붙여보려면 VITE_API_URL 지정 (예: http://localhost:8787/api/articles)
-// worker는 파라미터 없으면 국내만 줌(구버전 익스텐션 하위호환) — 글로벌 포함은 명시적으로 요청
+// worker는 파라미터 없으면 국내만, v 없으면 v0.6.0 이하용 응답을 줌(구버전 하위호환).
+// v=2: 일본·신규 글로벌 소스 포함 + 행마다 region 필드 — 뷰는 전부 이 region으로 가름
 const API_URL =
   (import.meta.env.VITE_API_URL || "https://techtab-worker.junyeolkim00.workers.dev/api/articles") +
-  "?region=all";
+  "?region=all&v=2";
 const ARTICLES_PER_COLUMN = 8;
 const RECENT_FEED_DAYS = 7;
 const RECENT_FEED_LIMIT = 40;
 const GLOBAL_FEED_LIMIT = 40;
 const REFETCH_MIN_INTERVAL_MS = 5 * 60 * 1000;
 const RECENT_FEED_SEEN_KEY = "techtab-recent-feed-seen";
+// 마지막 /api/articles 응답 — 새 탭을 열자마자 이걸로 그리고 fetch가 오면 교체 (API 왕복 0.4~1.2s 동안 빈 보드 방지)
+const ARTICLES_CACHE_KEY = "techtab-articles-cache";
 const SHORTCUTS_KEY = "techtab-shortcuts";
 const SHORTCUTS_MAX = 8;
 const DOCK_SIZE_KEY = "techtab-dock-size";
 const DOCK_SIZE_MIN = 40;
 const DOCK_SIZE_MAX = 72;
 const DOCK_SIZE_DEFAULT = 52;
+
+const ABROAD_REGIONS = [
+  { region: "global", label: "globalFeed", aria: "globalFeedAria" },
+  { region: "jp", label: "japanFeed", aria: "japanFeedAria" },
+] as const;
 
 function clampDockSize(n: number) {
   return Math.round(Math.max(DOCK_SIZE_MIN, Math.min(DOCK_SIZE_MAX, n)));
@@ -40,12 +48,20 @@ interface Article {
   link: string;
   source: string;
   published_at: string | null;
+  // v=2 응답에만 있음. v0.7.0 이전에 저장된 북마크 스냅샷엔 없음
+  region?: Region;
 }
+
+type Region = "kr" | "global" | "jp";
+type AbroadRegion = Exclude<Region, "kr">;
+const REGION_ORIGINAL_LOCALE: Record<Region, Locale> = { kr: "ko", global: "en", jp: "ja" };
 
 // 읽는 사람 언어의 번역본이 있으면 그걸, 없으면(번역 실패/백필 전, 또는 원문이 이미 그 언어) 원문으로 폴백.
 // 일·중은 그 사이에 영어 번역을 한 번 더 거침 — 국내 글을 한국어 원문으로 보여주는 것보다 영어가 읽힘
 // (글로벌 글은 원문이 영어라 title_en이 비어 있어 자연히 원문으로 떨어짐)
 function displayTitle(article: Article, locale: Locale): string {
+  // 원문 언어 = 읽는 사람 언어면 원문 (일본 글은 title_ja가 없어서 아래 ja 폴백이 영어 번역을 먼저 집어버림)
+  if (article.region && REGION_ORIGINAL_LOCALE[article.region] === locale) return article.title;
   const translated = {
     ko: article.title_ko,
     en: article.title_en,
@@ -484,9 +500,26 @@ function getInitialLastSeen(): Record<string, string> {
   }
 }
 
+function getCachedArticles(): Article[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ARTICLES_CACHE_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function cacheArticles(data: Article[]) {
+  try {
+    localStorage.setItem(ARTICLES_CACHE_KEY, JSON.stringify(data));
+  } catch {
+    // 쿼터 초과 등 — 캐시는 없어도 동작함
+  }
+}
+
 export default function App() {
   const { locale, setLocale, t } = useI18n();
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<Article[]>(getCachedArticles);
   const [selectedSources, setSelectedSources] = useState<Set<string>>(getInitialSelectedSources);
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [query, setQuery] = useState("");
@@ -505,7 +538,7 @@ export default function App() {
   const [lastSeenBySource, setLastSeenBySource] = useState<Record<string, string>>(getInitialLastSeen);
   const [newArticleLinks, setNewArticleLinks] = useState<Set<string>>(new Set());
   const [showRecentFeed, setShowRecentFeed] = useState(false);
-  const [showGlobalFeed, setShowGlobalFeed] = useState(false);
+  const [abroadRegion, setAbroadRegion] = useState<AbroadRegion | null>(null);
   const [recentFeedSeen, setRecentFeedSeen] = useState<string | null>(() => {
     try {
       return localStorage.getItem(RECENT_FEED_SEEN_KEY);
@@ -533,9 +566,10 @@ export default function App() {
       .then((res) => res.json())
       .then((data: Article[]) => {
         setArticles(data);
+        cacheArticles(data);
         lastFetchRef.current = Date.now();
 
-        const krData = data.filter((a) => !GLOBAL_SOURCES.has(a.source));
+        const krData = data.filter((a) => a.region === "kr");
 
         // 최초 방문(seen 키 없음): 지금까지 올라온 글 기준으로 초기화 → NEW 버튼이 안 튐
         if (localStorage.getItem(RECENT_FEED_SEEN_KEY) == null) {
@@ -575,7 +609,10 @@ export default function App() {
       lastFetchRef.current = Date.now();
       fetch(API_URL)
         .then((res) => res.json())
-        .then((data: Article[]) => setArticles(data))
+        .then((data: Article[]) => {
+          setArticles(data);
+          cacheArticles(data);
+        })
         .catch((err) => console.error("failed to refresh articles", err));
     }
     document.addEventListener("visibilitychange", refetch);
@@ -586,11 +623,8 @@ export default function App() {
     };
   }, []);
 
-  // 메인 보드 / 최신 글 모음 / NEW 버튼은 국내 소스만 다룸. 글로벌은 Global 뷰 전용.
-  const krArticles = useMemo(
-    () => articles.filter((a) => !GLOBAL_SOURCES.has(a.source)),
-    [articles]
-  );
+  // 메인 보드 / 최신 글 모음 / NEW 버튼은 국내 소스만 다룸. 글로벌·일본은 지역 그리드 전용.
+  const krArticles = useMemo(() => articles.filter((a) => a.region === "kr"), [articles]);
 
   const columns = useMemo(() => {
     const bySource = new Map<string, Article[]>();
@@ -705,14 +739,15 @@ export default function App() {
       .slice(0, RECENT_FEED_LIMIT);
   }, [krArticles]);
 
-  // 글로벌 소스 글을 최신순으로 상위 40개 (시간 창 없이 — 뷰가 항상 채워지도록)
-  // ponytail: /api/articles가 소스당 최신 10개만 줌 → 12개 소스면 최대 120개 중 40개. 발행량 많으면 사실상 최근 1~2주.
-  const globalList = useMemo(() => {
+  // 선택한 지역(글로벌/일본) 글을 최신순으로 상위 40개 (시간 창 없이 — 뷰가 항상 채워지도록)
+  // ponytail: /api/articles가 소스당 최신 10개만 줌 → 17개 소스면 최대 170개 중 40개. 발행량 많으면 사실상 최근 1~2주.
+  const abroadList = useMemo(() => {
+    if (!abroadRegion) return [];
     return articles
-      .filter((a) => GLOBAL_SOURCES.has(a.source) && a.published_at != null)
+      .filter((a) => a.region === abroadRegion && a.published_at != null)
       .sort((a, b) => new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime())
       .slice(0, GLOBAL_FEED_LIMIT);
-  }, [articles]);
+  }, [articles, abroadRegion]);
 
   // 마지막으로 최신 글 모음을 연 시각 이후에 올라온 국내 글이 있으면 NEW 버튼이 튐
   const hasUnseenRecent = useMemo(() => {
@@ -724,7 +759,7 @@ export default function App() {
     setShowBookmarksOnly((v) => {
       if (!v) {
         setShowRecentFeed(false);
-        setShowGlobalFeed(false);
+        setAbroadRegion(null);
       }
       return !v;
     });
@@ -735,7 +770,7 @@ export default function App() {
       const next = !v;
       if (next) {
         setShowBookmarksOnly(false);
-        setShowGlobalFeed(false);
+        setAbroadRegion(null);
         // 벽시계 now 가 아니라 지금까지 올라온 국내 글 중 최신 시각으로 — 미래 날짜 글이 있어도 bounce가 꺼짐
         const seen = newestSeen(krArticles);
         setRecentFeedSeen(seen);
@@ -749,13 +784,13 @@ export default function App() {
     });
   }
 
-  function toggleGlobalFeed() {
-    setShowGlobalFeed((v) => {
-      if (!v) {
-        setShowBookmarksOnly(false);
-        setShowRecentFeed(false);
-      }
-      return !v;
+  // 같은 지역을 다시 누르면 닫혀서 국내 보드로
+  function toggleAbroad(region: AbroadRegion) {
+    setAbroadRegion((current) => {
+      if (current === region) return null;
+      setShowBookmarksOnly(false);
+      setShowRecentFeed(false);
+      return region;
     });
   }
 
@@ -806,13 +841,28 @@ export default function App() {
         >
           NEW
         </button>
-        <button
-          className={`theme-toggle ${showGlobalFeed ? "theme-toggle-active" : ""}`}
-          onClick={toggleGlobalFeed}
-          aria-label={t("globalFeedAria")}
-        >
-          <Globe size={16} />
-        </button>
+        {/* 지구본에 올리면 글로벌 · 일본이 펼쳐짐 (언어 스위치와 같은 동작). 자리는 지구본 폭으로 고정하고
+            펼친 알약만 absolute로 띄움 — 헤더 흐름 안에서 펼치면 옆 언어 스위치가 밀림 */}
+        <div className="region-slot">
+          <div
+            className={`lang-switch region-switch ${abroadRegion ? "region-active" : ""}`}
+            role="group"
+            aria-label={t("regionSwitch")}
+          >
+            <Globe size={16} className="lang-switch-icon" aria-hidden />
+            {ABROAD_REGIONS.map((r) => (
+              <button
+                key={r.region}
+                className={r.region === abroadRegion ? "region-current" : ""}
+                onClick={() => toggleAbroad(r.region)}
+                aria-pressed={r.region === abroadRegion}
+                aria-label={t(r.aria)}
+              >
+                {t(r.label)}
+              </button>
+            ))}
+          </div>
+        </div>
         {/* 평소엔 현재 언어만, 마우스를 올리거나 키보드로 들어오면 4개 언어가 옆으로 펼쳐짐.
             헤더 맨 끝이라 펼쳐져도 다른 버튼이 밀리지 않음 */}
         <div className="lang-switch" role="group" aria-label={t("switchLanguage")}>
@@ -833,7 +883,7 @@ export default function App() {
         </div>
       </header>
 
-      {!showBookmarksOnly && !showRecentFeed && !showGlobalFeed && columns.length > 0 && (
+      {!showBookmarksOnly && !showRecentFeed && !abroadRegion && columns.length > 0 && (
         <div className="chips-wrap">
           <div className={`chips-collapse ${filtersCollapsed ? "" : "chips-collapse-expanded"}`}>
             <div className="chips" aria-hidden={filtersCollapsed || undefined}>
@@ -862,7 +912,7 @@ export default function App() {
 
       {articles.length === 0 && <p className="empty-state">{t("loading")}</p>}
 
-      {!showBookmarksOnly && !showRecentFeed && !showGlobalFeed && showEmptyHero && (
+      {!showBookmarksOnly && !showRecentFeed && !abroadRegion && showEmptyHero && (
         <div className="empty-hero">
           <Suspense fallback={<div className="logo-intro-canvas" />}>
             <LogoIntroCanvas color={theme === "dark" ? "#ededed" : "#171717"} />
@@ -874,11 +924,11 @@ export default function App() {
         </div>
       )}
 
-      {showGlobalFeed ? (
+      {abroadRegion ? (
         <FlatFeed
-          title={t("globalFeed")}
-          emptyText={t("globalFeedEmpty")}
-          items={globalList}
+          title={t(abroadRegion === "jp" ? "japanFeed" : "globalFeed")}
+          emptyText={t(abroadRegion === "jp" ? "japanFeedEmpty" : "globalFeedEmpty")}
+          items={abroadList}
           readLinks={readLinks}
           bookmarks={bookmarks}
           locale={locale}

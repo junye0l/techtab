@@ -45,24 +45,26 @@ export const SOURCE_DOMAINS: Record<string, string> = {
   "Hugging Face": "huggingface.co",
   "Netflix": "netflix.com",
   "Airbnb": "airbnb.com",
+  // 글로벌 영어권 비미국 (v0.7.0)
+  "Zalando": "zalando.com",
+  "Doctolib": "doctolib.fr",
+  "Grab": "grab.com",
+  "Agoda": "agoda.com",
+  "Razorpay": "razorpay.com",
+  // 일본 (v0.7.0) — source 원값이 영문 브랜드명이라 sourceLabel 표 추가 불필요.
+  // LY·CyberAgent는 대표 도메인이 Google 파비콘 404라 블로그 도메인으로
+  "LY Corporation": "techblog.lycorp.co.jp",
+  "Mercari": "mercari.com",
+  "CyberAgent": "developers.cyberagent.co.jp",
+  "DeNA": "dena.com",
+  "freee": "freee.co.jp",
+  "Money Forward": "moneyforward.com",
+  "ZOZO": "zozo.jp",
+  "Sansan": "sansan.com",
+  "pixiv": "pixiv.net",
+  "Cybozu": "cybozu.com",
+  "GMO Pepabo": "pepabo.com",
 };
-
-// 글로벌 뷰에 들어갈 소스 (worker feeds.ts의 region: "global"과 동기화 유지).
-// 메인 보드·최신 글 모음·NEW 버튼은 이 셋을 제외한 국내 소스만 다룸.
-export const GLOBAL_SOURCES = new Set([
-  "Meta",
-  "Cloudflare",
-  "Stripe",
-  "GitHub",
-  "Shopify",
-  "Dropbox",
-  "Spotify",
-  "Canva",
-  "Etsy",
-  "Hugging Face",
-  "Netflix",
-  "Airbnb",
-]);
 
 export function faviconUrl(source: string): string {
   const localIcon = LOCAL_ICON_OVERRIDES[source];

@@ -1042,3 +1042,31 @@ body {
   opacity: 0.4;
   cursor: default;
 }
+
+/* 지역 선택 (지구본): .lang-switch와 같은 펼침이지만 접힘 = 지구본만.
+   자리(.region-slot)는 지구본 폭으로 고정하고 알약을 absolute로 띄워, 펼쳐도 옆 언어 스위치가 밀리지 않음 */
+.region-slot {
+  position: relative;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 34px;
+}
+
+.region-switch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  padding: 0 8px;
+}
+
+/* 라벨이 코드(KO)가 아니라 이름(グローバル)이라 언어 스위치의 60px로는 잘림 */
+.region-switch:hover button,
+.region-switch:focus-within button {
+  max-width: 120px;
+}
+
+.region-switch.region-active .lang-switch-icon,
+.region-switch button.region-current {
+  color: var(--color-link);
+}
