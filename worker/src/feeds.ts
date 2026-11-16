@@ -1,6 +1,9 @@
 // 기술 블로그 RSS 목록 (URL 실동작 검증됨)
-// region: "kr" 국내 · "global" 해외 — 확장에서 뷰를 가르는 기준 (extension/src/sourceDomains.ts의 GLOBAL_SOURCES와 동기화)
-// lang:   피드 제목의 원문 언어. cron이 번역 방향을 정함 (ko → title_en, en → title_ko)
+// region: "kr" 국내 · "global" 영어권 해외 · "jp" 일본 — /api/articles?v=2 응답에 실려 확장의 뷰를 가름
+//         (탭 = 원문 언어. 비미국이라도 블로그가 영어면 global — 한 언어에 활발한 피드가 8개 이상이면 탭 추가)
+// lang:   피드 제목의 원문 언어. cron이 번역 방향을 정함 (index.ts의 TRANSLATIONS)
+// minApi: 2면 /api/articles?v=2 요청에만 포함. v0.6.0 이하 확장은 GLOBAL_SOURCES에 없는 소스를 전부 국내로
+//         취급하므로, v0.7.0에 추가된 소스를 구버전 응답에 넣으면 그 사용자들의 국내 보드에 섞임.
 //
 // 국내에서 제외한 블로그 (2026-08-28 기준):
 //   - 리디, 오늘의집: 자체 도메인 이전 후 RSS 없음(404)/차단(403) — 열리면 재추가
@@ -12,9 +15,12 @@
 //     Wise(마지막 글 19개월 전), Figma(피드 742개·디자인/제품 섞여 eng 희석)
 //   - OpenAI/DeepMind/Google AI: 발표·리서치 피드라 성격이 달라 "AI 섹션" 별도 검토
 //   - Anthropic/Kimi: RSS 자체가 없음
-export type Region = "kr" | "global";
-export type Lang = "ko" | "en";
-export const FEEDS: { source: string; url: string; region: Region; lang: Lang }[] = [
+// 일본 후보 중 제외 (2026-11-16 프로빙): Cookpad(마지막 글 76일 전·90일 2건), mixi·SmartNews(정지), Recruit·Rakuten(404)
+// 유럽·아시아 영어권 중 제외: Klarna·Skyscanner·BlaBlaCar·Traveloka·Tokopedia·Flipkart(정지), Delivery Hero(403),
+//   Monzo·PhonePe(404), Swiggy(타임아웃), Zomato(빈 피드). 중국·대만은 활발한 피드가 거의 없어 탭 보류.
+export type Region = "kr" | "global" | "jp";
+export type Lang = "ko" | "en" | "ja";
+export const FEEDS: { source: string; url: string; region: Region; lang: Lang; minApi?: 2 }[] = [
   // ── 국내 ──────────────────────────────────────────────
   { source: "네이버 D2", url: "https://d2.naver.com/d2.atom", region: "kr", lang: "ko" },
   { source: "카카오", url: "https://tech.kakao.com/feed", region: "kr", lang: "ko" },
@@ -52,4 +58,22 @@ export const FEEDS: { source: string; url: string; region: Region; lang: Lang }[
   { source: "Hugging Face", url: "https://huggingface.co/blog/feed.xml", region: "global", lang: "en" },
   { source: "Netflix", url: "https://netflixtechblog.com/feed", region: "global", lang: "en" },
   { source: "Airbnb", url: "https://medium.com/feed/airbnb-engineering", region: "global", lang: "en" },
+  // ── 글로벌 영어권 비미국 (v0.7.0, 2026-11-16 프로빙) ──
+  { source: "Zalando", url: "https://engineering.zalando.com/atom.xml", region: "global", lang: "en", minApi: 2 },
+  { source: "Doctolib", url: "https://medium.com/feed/doctolib", region: "global", lang: "en", minApi: 2 },
+  { source: "Grab", url: "https://engineering.grab.com/feed.xml", region: "global", lang: "en", minApi: 2 },
+  { source: "Agoda", url: "https://medium.com/feed/agoda-engineering", region: "global", lang: "en", minApi: 2 },
+  { source: "Razorpay", url: "https://engineering.razorpay.com/feed", region: "global", lang: "en", minApi: 2 },
+  // ── 일본 (v0.7.0, 2026-11-16 프로빙) — 표기는 모든 로케일 영문 브랜드명. 국내 "LINE"과 구분해 LY Corporation ──
+  { source: "LY Corporation", url: "https://techblog.lycorp.co.jp/ja/feed/index.xml", region: "jp", lang: "ja", minApi: 2 },
+  { source: "Mercari", url: "https://engineering.mercari.com/blog/feed.xml", region: "jp", lang: "ja", minApi: 2 },
+  { source: "CyberAgent", url: "https://developers.cyberagent.co.jp/blog/feed/", region: "jp", lang: "ja", minApi: 2 },
+  { source: "DeNA", url: "https://engineering.dena.com/index.xml", region: "jp", lang: "ja", minApi: 2 },
+  { source: "freee", url: "https://developers.freee.co.jp/feed", region: "jp", lang: "ja", minApi: 2 },
+  { source: "Money Forward", url: "https://moneyforward-dev.jp/feed", region: "jp", lang: "ja", minApi: 2 },
+  { source: "ZOZO", url: "https://techblog.zozo.com/feed", region: "jp", lang: "ja", minApi: 2 },
+  { source: "Sansan", url: "https://buildersbox.corp-sansan.com/feed", region: "jp", lang: "ja", minApi: 2 },
+  { source: "pixiv", url: "https://inside.pixiv.blog/feed", region: "jp", lang: "ja", minApi: 2 },
+  { source: "Cybozu", url: "https://blog.cybozu.io/feed", region: "jp", lang: "ja", minApi: 2 },
+  { source: "GMO Pepabo", url: "https://tech.pepabo.com/feed.xml", region: "jp", lang: "ja", minApi: 2 },
 ];

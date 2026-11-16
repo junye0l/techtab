@@ -154,6 +154,14 @@ const TRANSLATIONS: Record<Lang, { source: string; targets: { lang: string; col:
       { lang: "ZH-HANT", col: "title_zh" },
     ],
   },
+  ja: {
+    source: "JA",
+    targets: [
+      { lang: "KO", col: "title_ko" },
+      { lang: "EN-US", col: "title_en" },
+      { lang: "ZH-HANT", col: "title_zh" },
+    ],
+  },
 };
 
 // 번역은 피드마다가 아니라 "원문 언어 × 대상 언어"마다 DeepL 1번 (한 요청 최대 50개).
@@ -162,7 +170,7 @@ const TRANSLATIONS: Record<Lang, { source: string; targets: { lang: string; col:
 // 실제로 보이는 소스당 최신 ARTICLES_PER_SOURCE개 안에서만 골라서, 화면에 안 나오는 옛 글엔 쿼터를 안 씀.
 // ponytail: 특정 제목이 계속 실패하면 매시간 재시도됨 — 상한 50이라 폭주는 아니고 확장에 폴백이 있어 무해.
 async function translatePending(env: Env, feeds: typeof FEEDS) {
-  for (const lang of ["ko", "en"] as const) {
+  for (const lang of Object.keys(TRANSLATIONS) as Lang[]) {
     const sources = feeds.filter((f) => f.lang === lang).map((f) => f.source);
     if (sources.length === 0) continue;
     const placeholders = sources.map(() => "?").join(", ");
@@ -256,13 +264,15 @@ export default {
       // 기본값은 국내만 — v0.4.0 이전(글로벌 개념이 없는) 익스텐션이 파라미터 없이 호출해도
       // 새로 생긴 글로벌 소스가 필터 없이 그대로 노출되지 않도록. 글로벌 포함은 명시적 옵트인.
       const region = url.searchParams.get("region") === "all" ? "all" : "kr";
-      const cached = articlesCache.get(region);
+      // v=2(v0.7.0+): minApi 소스 포함 + 행마다 region 필드. 없으면 v0.6.0 이하가 받던 응답 그대로 (feeds.ts의 minApi 주석)
+      const v2 = url.searchParams.get("v") === "2";
+      const cacheKey = `${region}:${v2 ? 2 : 1}`;
+      const cached = articlesCache.get(cacheKey);
 
       if (!cached || Date.now() - cached.at > ARTICLES_TTL_MS) {
         // FEEDS에서 빠진 소스의 기존 행은 D1에 남아있으므로 현재 목록으로 필터 (소스명은 .bind로 파라미터화)
-        const sources = (region === "all" ? FEEDS : FEEDS.filter((f) => f.region === "kr")).map(
-          (f) => f.source
-        );
+        const feeds = FEEDS.filter((f) => (region === "all" || f.region === "kr") && (v2 || !f.minApi));
+        const sources = feeds.map((f) => f.source);
         const placeholders = sources.map(() => "?").join(", ");
         const { results } = await env.DB.prepare(
           `SELECT title, title_en, title_ko, title_ja, title_zh, link, source, published_at FROM (
@@ -273,10 +283,12 @@ export default {
            ORDER BY published_at DESC`
         )
           .bind(...sources)
-          .all();
-        articlesCache.set(region, { at: Date.now(), body: JSON.stringify(results) });
+          .all<{ source: string }>();
+        const regionOf = new Map(feeds.map((f) => [f.source, f.region]));
+        const rows = v2 ? results.map((r) => ({ ...r, region: regionOf.get(r.source) })) : results;
+        articlesCache.set(cacheKey, { at: Date.now(), body: JSON.stringify(rows) });
       }
-      return new Response(articlesCache.get(region)!.body, {
+      return new Response(articlesCache.get(cacheKey)!.body, {
         headers: {
           "Content-Type": "application/json",
           "Cache-Control": "public, max-age=60",
@@ -289,10 +301,10 @@ export default {
   },
 
   async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
-    // wrangler.toml crons: "0 * * * *" → 국내, "30 * * * *" → 글로벌.
-    // 로컬 수동 트리거(cron 문자열 없음)는 둘 다 수집.
-    const region: Region | null =
-      event.cron === "30 * * * *" ? "global" : event.cron === "0 * * * *" ? "kr" : null;
+    // wrangler.toml crons: "0 * * * *" → 국내, "30 * * * *" → 글로벌, "45 * * * *" → 일본.
+    // 로컬 수동 트리거(cron 문자열 없음)는 전부 수집.
+    const CRON_REGIONS: Record<string, Region> = { "0 * * * *": "kr", "30 * * * *": "global", "45 * * * *": "jp" };
+    const region: Region | null = CRON_REGIONS[event.cron] ?? null;
     await collectFeeds(env, region);
   },
 };
