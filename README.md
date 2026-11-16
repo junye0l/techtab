@@ -1,17 +1,17 @@
 [**소개 페이지 →**](https://techtab.kr/) · [**Landing page →**](https://techtab.kr/)
 
-국내 기술 블로그를 중심으로, 글로벌 빅테크 기술 블로그까지 새 탭에서 모아보는 크롬 확장 프로그램입니다.
+국내 기술 블로그를 중심으로, 영어권 글로벌 기업과 일본 기업의 기술 블로그까지 새 탭에서 모아보는 크롬 확장 프로그램입니다.
 
-*A Chrome extension that gathers Korean engineering blogs — plus the big global ones — onto your new-tab page.*
+*A Chrome extension that gathers Korean engineering blogs — plus global and Japanese ones — onto your new-tab page.*
 
-네이버, 카카오, 토스, 우아한형제들, 당근마켓 등 국내 23개 기업의 기술 블로그 RSS를 매시간 자동으로 수집해서, 관심 있는 기업만 골라 나만의 피드로 볼 수 있습니다. 상단의 지구본 버튼을 누르면 글로벌 12개 기업의 블로그도 최신순으로 모아 볼 수 있습니다.
+네이버, 카카오, 토스, 우아한형제들, 당근마켓 등 국내 23개 기업의 기술 블로그 RSS를 매시간 자동으로 수집해서, 관심 있는 기업만 골라 나만의 피드로 볼 수 있습니다. 상단의 지구본 버튼에 마우스를 올리면 글로벌 17개·일본 11개 기업의 블로그도 골라서 최신순으로 볼 수 있습니다.
 
-*It auto-collects the RSS feeds of 23 Korean companies — NAVER, Kakao, Toss, Woowahan, Daangn, and more — every hour, so you can pick the ones you care about and build your own feed. The globe button at the top gathers 12 global companies' blogs too, newest first.*
+*It auto-collects the RSS feeds of 23 Korean companies — NAVER, Kakao, Toss, Woowahan, Daangn, and more — every hour, so you can pick the ones you care about and build your own feed. Hover the globe button at the top to pick 17 global or 11 Japanese companies' blogs too, newest first.*
 
 ## 주요 기능 · Features
 
-- **국내 23개 + 글로벌 12개 기업 기술 블로그** RSS 자동 수집 (매시간 갱신)<br>
-*RSS from 23 Korean + 12 global companies' engineering blogs, auto-collected and refreshed hourly*
+- **국내 23개 + 글로벌 17개 + 일본 11개 기업 기술 블로그** RSS 자동 수집 (매시간 갱신)<br>
+*RSS from 23 Korean + 17 global + 11 Japanese companies' engineering blogs, auto-collected and refreshed hourly*
 - 원하는 기업만 골라서 보드에 추가/제거, **드래그 앤 드롭**으로 순서 변경<br>
 *Add or remove only the companies you want, and reorder columns by drag and drop*
 - **북마크**로 나중에 읽을 글 저장, **읽음 표시**로 이미 본 글 구분<br>
@@ -20,12 +20,12 @@
 *A NEW badge on posts published since your last visit*
 - **`NEW` 버튼**으로 최근 7일간 국내 블로그의 새 글을 소스 구분 없이 한 화면에 모아보기<br>
 *A `NEW` button gathers every post from the last 7 days across the Korean blogs into one view*
-- 상단의 **지구본 버튼**으로 글로벌 기업 블로그를 최신순으로 모아보기<br>
-*A globe button gathers the global companies' blogs, newest first*
+- 상단의 **지구본 버튼**에 마우스를 올려 **글로벌 · 일본** 블로그를 골라 최신순으로 모아보기<br>
+*Hover the globe button to pick the **Global** or **Japan** blogs, newest first*
 - 제목 키워드 자동 추출(AI, Kafka, LLM 등) 배지 표시<br>
 *Auto-extracted keyword badges from titles (AI, Kafka, LLM, …)*
-- **한국어 / 영어 / 일본어 / 중국어(번체) 지원** — 국내 글은 영·일·중으로, 글로벌 글은 한·일·중으로 제목 자동 번역<br>
-*Korean, English, Japanese, and Traditional Chinese — post titles are auto-translated (Korean posts into EN/JA/ZH, global posts into KO/JA/ZH)*
+- **한국어 / 영어 / 일본어 / 중국어(번체) 지원** — 제목을 각 글의 원문 언어에서 바로 자동 번역<br>
+*Korean, English, Japanese, and Traditional Chinese — post titles are auto-translated straight from each post's original language*
 - 자주 가는 사이트를 하단 **바로가기 독**에 최대 8개까지 고정 (크롬 기본 새 탭의 바로가기 대체)<br>
 *Pin up to 8 favorite sites to a **shortcut dock** at the bottom — replacing Chrome's default new-tab shortcuts*
 - 다크/라이트 모드, Google 검색창 내장<br>

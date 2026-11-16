@@ -1,6 +1,6 @@
 # Tech Tab
 
-> A Chrome extension that replaces the new-tab page with a feed of Korean big-tech and startup engineering blog posts, auto-collected hourly. Free, no sign-up, no personal data collected.
+> A Chrome extension that replaces the new-tab page with a feed of Korean big-tech and startup engineering blog posts, plus global and Japanese tech blogs, auto-collected hourly. Free, no sign-up, no personal data collected.
 
 ## Links
 - Landing page: https://techtab.kr/
@@ -9,9 +9,9 @@
 - Privacy policy: https://techtab.kr/privacy.html
 
 ## What it does
-- Aggregates 23 Korean company engineering blog RSS feeds (NAVER, Kakao, Toss, Daangn, Woowahan, and more) into one new-tab feed, plus a separate view of 12 global engineering blogs (Netflix, Stripe, Cloudflare, GitHub, Meta, and more)
+- Aggregates 23 Korean company engineering blog RSS feeds (NAVER, Kakao, Toss, Daangn, Woowahan, and more) into one new-tab feed, plus separate views of 17 global (Netflix, Stripe, Cloudflare, GitHub, Meta, and more) and 11 Japanese (Mercari, LY Corporation, ZOZO, DeNA, and more) engineering blogs
 - Pick which companies to follow, reorder columns by drag and drop, bookmark posts, mark as read, NEW badges for posts since last visit
-- Korean, English, Japanese, and Traditional Chinese UI; post titles are machine-translated (DeepL) — Korean posts into English, Japanese, and Traditional Chinese; global posts into Korean, Japanese, and Traditional Chinese
+- Korean, English, Japanese, and Traditional Chinese UI; post titles are machine-translated (DeepL) — each straight from its original language (Korean, English, or Japanese) into the others
 - A shortcut dock at the bottom for up to 8 user-chosen sites, replacing Chrome's default new-tab shortcuts
 - Dark/light mode, built-in Google search box
 

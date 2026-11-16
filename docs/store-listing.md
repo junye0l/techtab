@@ -2,21 +2,21 @@
 
 ## 짧은 설명 (132자 이내)
 
-국내 + 글로벌 빅테크 기술 블로그를 새 탭에서 모아보세요. 관심 기업만 골라 나만의 피드로. 매시간 자동 수집, 제목 자동 번역.
+국내 + 해외(영어권·일본) 기술 블로그를 새 탭에서 모아보세요. 관심 기업만 골라 나만의 피드로. 매시간 자동 수집, 제목 자동 번역.
 
 ## 상세 설명 (한국어)
 
-국내 기술 블로그를 중심으로, 글로벌 빅테크 기술 블로그까지 새 탭에서 모아보는 확장 프로그램입니다.
+국내 기술 블로그를 중심으로, 영어권 글로벌 기업과 일본 기업의 기술 블로그까지 새 탭에서 모아보는 확장 프로그램입니다.
 
-네이버, 카카오, 토스, 우아한형제들, 당근마켓 등 국내 23개 기업의 기술 블로그 RSS를 매시간 자동으로 수집해서, 관심 있는 기업만 골라 나만의 피드로 볼 수 있습니다. Netflix, Stripe, Cloudflare, GitHub, Meta 등 글로벌 12개 기업의 블로그는 별도의 '글로벌' 뷰에서 최신순으로 모아봅니다.
+국내 23개 기업의 기술 블로그 RSS를 매시간 자동으로 수집해서, 관심 있는 기업만 골라 나만의 피드로 볼 수 있습니다. 글로벌 17개 기업과 일본 11개 기업의 블로그는 각각 '글로벌'·'일본' 뷰에서 최신순으로 모아봅니다.
 
 ■ 주요 기능
 
-국내 23개 + 글로벌 12개 기업 기술 블로그 자동 수집 (매시간 갱신)
+국내 23개 + 글로벌 17개 + 일본 11개 기업 기술 블로그 자동 수집 (매시간 갱신)
 
 원하는 기업만 골라서 보드에 추가/제거, 드래그 앤 드롭으로 순서 변경
 
-지구본 버튼으로 글로벌 기업 블로그를 최신순 한 화면에 모아보기
+지구본 버튼에 마우스를 올려 글로벌·일본 블로그를 골라 최신순 한 화면에 모아보기
 
 북마크로 나중에 읽을 글 저장, 읽음 표시로 이미 본 글 구분
 
@@ -26,7 +26,7 @@
 
 제목 키워드 자동 추출(AI, Kafka, LLM 등) 배지 표시
 
-한국어/영어/일본어/중국어(번체) UI, 글 제목 자동 번역 (국내 글은 영어·일본어·중국어로, 글로벌 글은 한국어·일본어·중국어로)
+한국어/영어/일본어/중국어(번체) UI, 글 제목 자동 번역 (각 글의 원문 언어에서 한국어·영어·일본어·중국어로 바로 번역)
 
 자주 가는 사이트를 하단 독에 최대 8개까지 바로가기로 추가, 순서 변경, 독 크기 변경 가능 (크롬 기본 새 탭의 바로가기 대체)
 
@@ -41,17 +41,17 @@
 
 ## 상세 설명 (English)
 
-A Chrome extension that gathers Korean engineering blogs — plus the big global ones — onto your new-tab page.
+A Chrome extension that gathers Korean engineering blogs — plus global and Japanese ones — onto your new-tab page.
 
-It auto-collects the RSS feeds of 23 Korean companies — NAVER, Kakao, Toss, Woowahan, Daangn, and more — every hour, so you can pick the ones you care about and build your own feed. Twelve global companies — Netflix, Stripe, Cloudflare, GitHub, Meta, and more — are gathered in a separate "Global" view, newest first.
+It auto-collects the RSS feeds of 23 Korean companies every hour, so you can pick the ones you care about and build your own feed. 17 global and 11 Japanese companies are gathered in separate "Global" and "Japan" views, newest first.
 
 ■ Features
 
-- Auto-collects 23 Korean + 12 global engineering blogs (refreshed hourly)
+- Auto-collects 23 Korean + 17 global + 11 Japanese engineering blogs (refreshed hourly)
 
 - Add or remove only the companies you want; reorder columns by drag and drop
 
-- A globe button gathers the global blogs into one newest-first view
+- Hover the globe button to pick Global or Japan, each gathered into one newest-first view
 
 - Bookmark posts to read later; already-read posts are marked
 
@@ -61,7 +61,7 @@ It auto-collects the RSS feeds of 23 Korean companies — NAVER, Kakao, Toss, Wo
 
 - Auto-extracted keyword badges from titles (AI, Kafka, LLM, and more)
 
-- Korean, English, Japanese, and Traditional Chinese UI, with article titles auto-translated — Korean posts into English, Japanese, and Chinese; global posts into Korean, Japanese, and Chinese
+- Korean, English, Japanese, and Traditional Chinese UI, with article titles auto-translated — each straight from its original language
 
 - Pin up to 8 favorite sites to a shortcut dock at the bottom — drag to reorder, resize the dock to fit; it replaces Chrome's default new-tab shortcuts
 
@@ -78,17 +78,17 @@ Source on GitHub: https://github.com/junye0l/techtab
 
 > 短い説明（拡張機能の説明文）は `extension/public/_locales/ja/messages.json` から自動で入ります。
 
-韓国のテック企業の技術ブログを中心に、海外のビッグテックの技術ブログまで新しいタブにまとめて表示する拡張機能です。記事タイトルは日本語に自動翻訳されます。
+韓国のテック企業の技術ブログを中心に、海外と日本のテック企業の技術ブログまで新しいタブにまとめて表示する拡張機能です。韓国と海外の記事タイトルは日本語に自動翻訳されます。
 
-韓国のテック企業23社の技術ブログのRSSを1時間ごとに自動で収集し、気になる企業だけを選んで自分だけのフィードを作れます。海外のテック企業12社のブログは、専用の「グローバル」ビューで新しい順にまとめて読めます。
+韓国のテック企業23社の技術ブログのRSSを1時間ごとに自動で収集し、気になる企業だけを選んで自分だけのフィードを作れます。海外17社と日本11社のブログは、それぞれ「グローバル」「日本」ビューで新しい順にまとめて読めます。
 
 ■ 主な機能
 
-- 韓国23社＋海外12社の技術ブログを自動収集（1時間ごとに更新）
+- 韓国23社＋海外17社＋日本11社の技術ブログを自動収集（1時間ごとに更新）
 
 - 読みたい企業だけをボードに追加・削除、ドラッグ＆ドロップで並べ替え
 
-- 地球儀ボタンで海外企業のブログを新しい順に一画面で表示
+- 地球儀ボタンにカーソルを合わせて「グローバル」「日本」を選び、新しい順に一画面で表示
 
 - ブックマークで後で読む記事を保存、既読の記事は区別して表示
 
@@ -115,17 +115,17 @@ Source on GitHub: https://github.com/junye0l/techtab
 
 > 簡短說明（擴充功能說明）會自動從 `extension/public/_locales/zh_TW/messages.json` 帶入。CWS 後台的 `zh_CN` 分頁也貼上同一份繁體中文。
 
-以韓國科技公司的技術部落格為主，連同海外大型科技公司的技術部落格，一起集中在新分頁的擴充功能。文章標題會自動翻譯成繁體中文。
+以韓國科技公司的技術部落格為主，連同海外與日本科技公司的技術部落格，一起集中在新分頁的擴充功能。文章標題會自動翻譯成繁體中文。
 
-每小時自動收集 23 家韓國科技公司的技術部落格 RSS，你可以只挑選感興趣的公司，打造專屬於你的動態。另外 12 家海外科技公司的部落格，則集中在獨立的「全球」檢視中，依最新順序排列。
+每小時自動收集 23 家韓國科技公司的技術部落格 RSS，你可以只挑選感興趣的公司，打造專屬於你的動態。另外 17 家海外與 11 家日本科技公司的部落格，則分別集中在「全球」與「日本」檢視中，依最新順序排列。
 
 ■ 主要功能
 
-- 自動收集 23 家韓國＋12 家海外企業的技術部落格（每小時更新）
+- 自動收集 23 家韓國＋17 家海外＋11 家日本企業的技術部落格（每小時更新）
 
 - 只把想看的公司加入看板或移除，並可拖放調整順序
 
-- 點選地球按鈕，即可在同一畫面依最新順序瀏覽海外企業部落格
+- 將游標移到地球按鈕上選擇「全球」或「日本」，即可在同一畫面依最新順序瀏覽
 
 - 用書籤儲存稍後要讀的文章，已讀文章會另外標示
 
