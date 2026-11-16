@@ -67,11 +67,21 @@ function corsHeaders(request: Request): HeadersInit {
   };
 }
 
-// 기본 엔티티 확장 제한(1000)은 본문이 긴 블로그 글(escape된 HTML)에서 쉽게 초과되므로 완화
+// 기본 엔티티 확장 제한(1000)은 본문이 긴 블로그 글(escape된 HTML)에서 쉽게 초과되므로 완화.
+// htmlEntities: XML 기본 5개 외에 숫자 참조(&#8217;)·HTML 이름 엔티티(&hellip;)도 풂 — 없으면 제목에 그대로 노출됨
 const parser = new XMLParser({
   ignoreAttributes: false,
   processEntities: { maxTotalExpansions: 100_000, maxEntityCount: 100_000 },
+  htmlEntities: true,
 });
+
+// 이중 인코딩된 피드(예: Mercari의 `&amp;#8211;`)는 파서가 한 겹만 벗겨 `&#8211;`가 남음 → 숫자 참조만 한 번 더
+function decodeNumericRefs(s: string): string {
+  return s.replace(/&#(x[\da-f]+|\d+);/gi, (m, n: string) => {
+    const cp = n[0] === "x" || n[0] === "X" ? parseInt(n.slice(1), 16) : parseInt(n, 10);
+    return cp > 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m;
+  });
+}
 
 // <title type="html">...</title> 처럼 속성이 붙은 태그는 문자열이 아니라 { "#text": ..., "@_type": ... } 객체로 파싱됨
 function textOf(value: unknown): string {
@@ -104,7 +114,7 @@ function extractItems(strippedXml: string): { title: string; link: string; pubDa
       const link =
         typeof item.link === "string" ? item.link : item.link?.["@_href"] ?? item.link?.[0]?.["@_href"];
       return {
-        title: textOf(item.title).trim(),
+        title: decodeNumericRefs(textOf(item.title)).trim(),
         link: String(link ?? "").trim(),
         pubDate: textOf(item.pubDate ?? item.published ?? item.updated) || null,
       };
